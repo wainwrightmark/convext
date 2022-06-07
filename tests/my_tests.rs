@@ -7,7 +7,7 @@ use ntest::test_case;
 pub const EXAMPLES:[&str; 5] =
 [
 
-"circle",
+"Circle",
 "let myvar 100
 square h ?myvar",
 "circle circle p 0.5 h 120",

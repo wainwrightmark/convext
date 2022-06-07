@@ -52,7 +52,7 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
 
                         let inserted = 
                         temp_rules
-                        .insert(name.clone(), UserRule { name: name.clone(), children: invocations}).is_none();
+                        .insert(name.to_ascii_lowercase(), UserRule { name: name.clone(), children: invocations}).is_none();
                     if !inserted{
                         return Err(format!("Variable '{}' defined more than once", name));
                     }
@@ -92,7 +92,7 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
     }
 
     for invocation in temp_top_level.iter() {
-        if !temp_rules.contains_key(&invocation.rule.to_ascii_lowercase())&&!PRIMITIVES.contains(&invocation.rule.as_str())  {
+        if !temp_rules.contains_key(&invocation.rule.to_ascii_lowercase())&&!PRIMITIVES.contains(&invocation.rule.to_ascii_lowercase().as_str())  {
             return Err(format!("Rule '{}' does not exist", invocation.rule));
         }
     }
@@ -100,7 +100,7 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
     for (_, rule) in temp_rules.iter() {
 
         for invocation in rule.children.iter(){
-            if !temp_rules.contains_key(&invocation.rule.to_ascii_lowercase()) &&!PRIMITIVES.contains(&invocation.rule.as_str()) {
+            if !temp_rules.contains_key(&invocation.rule.to_ascii_lowercase()) &&!PRIMITIVES.contains(&invocation.rule.to_ascii_lowercase().as_str()) {
                 return Err(format!("Rule '{}' does not exist", invocation.rule));
             }
         }
