@@ -1,0 +1,25 @@
+WHITESPACE = _{ " "| "\t" | NEWLINE }
+keyword_let = {^"let"}
+keyword_rule = {^"rul"}
+keyword_end = {^"end"}
+keyword = {keyword_let | keyword_rule | keyword_end}
+
+name = @{!keyword ~ ASCII_ALPHA ~ ASCII_ALPHANUMERIC*}
+number = @{^"m"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?}
+variable = @{"?" ~ name}
+value = {number | variable}
+
+assignment = {keyword_let ~ name ~ number }
+property = {name ~ value}
+invocation = {name ~ (property)* }
+
+rule = {keyword_rule ~ name ~ invocation* ~ keyword_end?}
+statement = {rule | assignment | invocation}
+file = {SOI ~ statement+ ~ EOI}
+
+
+//todo range
+//todo probability
+//todo conditionals
+//todo boolean
+//todo math (e.g. 1 plus ?myvar)
