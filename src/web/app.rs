@@ -12,7 +12,7 @@ pub fn app() -> Html {
 
     html! {
 
-            <div class="paper container margin-bottom-large">
+            <div class="paper container margin-bottom-large" style="display: flex; flex-direction: column;">
             
                 <InputBox />
                 <DisplayBox/>
@@ -24,7 +24,7 @@ pub fn app() -> Html {
 #[function_component(InputBox)]
 pub fn input_box() -> Html {
     let text = Dispatch::<InputState>::new().get().text.clone();
-    //let full_text// = use_selector(|s: &InputState| s.text );
+    //let text = use_selector(|s: &InputState| s.text.clone() ).as_ref().clone();
 
     let oninput = Dispatch::<InputState>::new().reduce_mut_callback_with(|s, e: InputEvent| {
         let input: HtmlTextAreaElement = e.target_unchecked_into();
@@ -40,6 +40,7 @@ pub fn input_box() -> Html {
 
         <textarea id="input-textarea" name="input-textarea" class="input-textarea" rows="10" {oninput} 
         value={text}
+        spellcheck="false"
         >
         </textarea>
         </div>
@@ -54,10 +55,11 @@ pub fn diplay_box() -> Html{
 
 
     html!(
-        <div>
-        <p> {err} </p>
-        <iframe class="display-iframe" srcdoc={svg}></iframe>
-        </div>
+        <>
+        
+        <iframe class="display-iframe" srcdoc={svg} scrolling="no"></iframe>
+        <code> {err} </code>
+        </>
 )
 }
 
