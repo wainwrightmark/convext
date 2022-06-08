@@ -1,7 +1,7 @@
 - [x] Editor for prop values
 - [ ] Evolution editor
 - [x] Length and width `l` and `w`
-- [ ] Curvature `c`
+- [x] Curvature `c`
 - [ ] Allow probabilities for rules 
 - [ ] Add ranges for animation. Also compound ranges, time `t` property
 - [ ] More primitives `tri` `rtri` `pent` `hex`
@@ -19,5 +19,6 @@
 - [ ] Rename
 - [ ] Duplicate Line
 
+- [x] Settings Panel
 - [ ] Export SVG
 - [ ] Css Classes

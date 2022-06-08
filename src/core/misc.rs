@@ -7,6 +7,7 @@ use pest::iterators::Pairs;
 use pest::Parser;
 use pest_derive::Parser;
 use serde::{Deserialize, Serialize};
+use yew::Properties;
 
 #[derive(Parser)]
 #[grammar = "core/convext.pest"]
@@ -204,6 +205,25 @@ impl Node {
         )
     }
 
+    fn get_style(rp: &NodeProperties)-> String{
+        let mut transform = "".to_string();
+        if rp.x != 0.0 || rp.y != 0.0{
+            transform = format!("{} translate({x}px, {y}px) ",transform, x= rp.x,y= rp.y);
+        }
+        if rp.p != 1.0{
+            transform = format!("{} scale({p}%) ",transform, p= rp.p * 100.0);
+        }
+        if(rp.r != 0.0){
+            transform =  format!("{} rotate({r}deg)",transform, r= rp.r);
+        }
+        if transform != ""{
+            format!("style=\"transform: {};\"", transform)            
+        }
+        else {
+            "".to_string()
+        }
+    }
+
     pub fn to_svg_element(&self, grammar: &Grammar) -> String {
         let relative_properties = NodeProperties::from_temp(&self.invocation.properties, &grammar.defs);
 
@@ -216,13 +236,12 @@ impl Node {
                 .map(|c| c.to_svg_element(grammar))
                 .join("\r\n");
 
-            format!("<g style=\"transform:  translate({x}px, {y}px) scale({p}%) rotate({r}deg);\">\r\n {child_text}\r\n </g>",
+            let style = Self::get_style(&relative_properties);
 
-            x= relative_properties.x,
-            y =   relative_properties.y,
-            r = relative_properties.r,
-            p =  relative_properties.p * 100.0,
+            format!("<g {style}>\r\n {child_text}\r\n </g>",
+
                     //no color
+                style=style,
             
             child_text = child_text)
         } else {

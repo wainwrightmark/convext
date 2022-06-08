@@ -14,13 +14,71 @@ pub fn app() -> Html {
 
         <div class="paper container margin-bottom-large" style="display: flex; flex-direction: column;">
 
-            <InputBox />
-            <ErrorBox />
+
             <DisplayBox/>
+            <ErrorBox />
+            <details>
+            <summary>{"Code"}</summary>
+            <InputBox />
+            </details>
+
+            <details>
+            <summary>{"Variables"}</summary>
             <SlidersControl/>
+            </details>
+
+
+            <SettingsControl/>
 
         </div>
     }
+}
+
+#[function_component(SettingsControl)]
+pub fn settings_control() -> Html {
+    let settings = use_selector(|state: &InputState| state.settings)
+        .as_ref()
+        .clone();
+
+    let on_max_nodes_input =
+        Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: InputEvent| {
+            let input: HtmlInputElement = e.target_unchecked_into();
+            let new_value = input.value();
+            let new_u_value: usize = new_value.parse().unwrap();
+            let new_settings = ExpandSettings {
+                max_nodes: new_u_value,
+                ..settings
+            };
+            s.update_settings(new_settings);
+        });
+        
+        let on_max_depth_input =
+        Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: InputEvent| {
+            let input: HtmlInputElement = e.target_unchecked_into();
+            let new_value = input.value();
+            let new_u_value: usize = new_value.parse().unwrap();
+            let new_settings = ExpandSettings {
+                max_depth: new_u_value,
+                ..settings
+            };
+            s.update_settings(new_settings);
+        });
+
+    html!(
+        <details>
+            <summary>{"Settings"}</summary>
+                <div class="slider">
+                    <code style="width:80px" >{"Max Nodes"}</code>
+                    <input style="width:80px" oninput={on_max_nodes_input} type="number"  value={format!("{}",settings.max_nodes )} min={100} max={10000}  step={100} />
+                </div>
+                <div class="slider">
+                    <code style="width:80px" >{"Max Depth"}</code>
+                    <input style="width:80px" oninput={on_max_depth_input} type="number"  value={format!("{}",settings.max_depth )} min={4} max={40}  step={1} />
+                </div>
+        </details>
+
+
+    )
 }
 
 #[function_component(SlidersControl)]

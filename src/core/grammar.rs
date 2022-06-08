@@ -133,9 +133,9 @@ impl Default for ExpandSettings {
     fn default() -> Self {
         Self {
             max_nodes: 1000,
-            max_depth: 10,
+            max_depth: 20,
             min_a: 0.01,
-            min_p: 0.001,
+            min_p: 0.01,
         }
     }
 }
