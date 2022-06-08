@@ -1,10 +1,10 @@
 use std::rc::Rc;
 
 use crate::core::prelude::*;
-use crate::state::{prelude::*, self};
+use crate::state::{self, prelude::*};
 use crate::web::prelude::*;
 use itertools::Itertools;
-use web_sys::{HtmlTextAreaElement, HtmlInputElement};
+use web_sys::{HtmlInputElement, HtmlTextAreaElement};
 use yew::prelude::*;
 use yewdux::prelude::*;
 
@@ -47,7 +47,12 @@ pub struct InputSliderProperties {
 pub fn input_slider(properties: &InputSliderProperties) -> Html {
     let key = properties.prop_key.clone();
 
-    let value = use_selector_with_deps(|state: &InputState, k| state.get_variable_value(k), key.clone()).as_ref().clone();
+    let value = use_selector_with_deps(
+        |state: &InputState, k| state.get_variable_value(k),
+        key.clone(),
+    )
+    .as_ref()
+    .clone();
 
     if let Some(p_type) = properties.p_type {
         let (min, max, step) = p_type.deconstruct();
@@ -55,36 +60,38 @@ pub fn input_slider(properties: &InputSliderProperties) -> Html {
         let key2 = key.clone();
         let key3 = key.clone();
 
-        let on_slider_input = Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: InputEvent|{
-            let input : HtmlInputElement = e.target_unchecked_into();
-            let new_value = input.value();
-            let new_f_value:f32 = new_value.parse().unwrap();
-            s.set_variable_value(key2.clone(), new_f_value);
-        });
-        
-        let on_box_input = Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: InputEvent|{
-            let input : HtmlInputElement = e.target_unchecked_into();
-            let new_value = input.value();
-            let new_f_value:f32 = new_value.parse().unwrap();
-            s.set_variable_value(key3.clone(), new_f_value);
-        });
+        let on_slider_input =
+            Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: InputEvent| {
+                let input: HtmlInputElement = e.target_unchecked_into();
+                let new_value = input.value();
+                let new_f_value: f32 = new_value.parse().unwrap();
+                s.set_variable_value(key2.clone(), new_f_value);
+            });
+
+        let on_box_input =
+            Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: InputEvent| {
+                let input: HtmlInputElement = e.target_unchecked_into();
+                let new_value = input.value();
+                let new_f_value: f32 = new_value.parse().unwrap();
+                s.set_variable_value(key3.clone(), new_f_value);
+            });
 
         html!(
                 <div class="slider">
 
-            <code style="width:100px" >{format!("{}", key)}</code>
+            <code style="width:80px" >{format!("{}", key)}</code>
           <input oninput={on_slider_input} type="range"  value={format!("{}",value )} min={format!("{}",min )} max={format!("{}",max )}  step={format!("{}",step )} />
-          <input  oninput={on_box_input} type="number"  value={format!("{}",value )} min={format!("{}",min )} max={format!("{}",max )}  step={format!("{}",step )} />
-          
-          
+          <input style="width:80px" oninput={on_box_input} type="number"  value={format!("{}",value )} min={format!("{}",min )} max={format!("{}",max )}  step={format!("{}",step )} />
+
+
         </div>
             )
     } else {
         html!(
                 <div class="slider">
-
-          <input type="range"  value={format!("{}",value )} disabled=true />
-          <code >{format!("{}: {}", key, value)}</code>
+                <code style="width:80px" >{format!("{}", key)}</code>
+                <input  type="range"  value={format!("{}",value )} disabled=true />
+                <input style="width:80px" type="number"  value={format!("{}",value )} disabled=true  />
         </div>
             )
     }
