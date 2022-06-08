@@ -63,7 +63,6 @@ impl TempProperties {
     }
 }
 
-
 impl Default for TempProperties {
     fn default() -> Self {
         Self {
@@ -79,22 +78,41 @@ impl Default for TempProperties {
     }
 }
 
-
 #[derive(PartialEq, PartialOrd, Clone, Copy, Serialize, Deserialize)]
-pub enum PropertyKey{
-    P,
-
-    X,
-    Y,
-
-    R,
-
-    H,S,V,A
-
+pub enum PropertyType {
+    AnyPositive,
+    Any,
+    UnitInterval,
+    Degrees,
 }
 
-impl PropertyKey{
-    pub fn set(self, properties: &mut TempProperties, value: Value){
+impl PropertyType {
+    ///Deconstruct this into min, max, step
+    pub fn deconstruct(self) -> (f32, f32, f32) {
+        match self {
+            PropertyType::UnitInterval => (0.0, 1.0, 0.05),
+            PropertyType::AnyPositive => (0.0, 2.0, 0.05),
+            PropertyType::Any => (-2.0, 2.0, 0.05),
+            PropertyType::Degrees => (0.0, 360.0, 15.0),
+        }
+    }
+}
+
+#[derive(PartialEq, PartialOrd, Clone, Copy, Serialize, Deserialize)]
+pub enum PropertyKey {
+    P,
+    X,
+    Y,
+    R,
+
+    H,
+    S,
+    V,
+    A,
+}
+
+impl PropertyKey {
+    pub fn set(self, properties: &mut TempProperties, value: Value) {
         match self {
             PropertyKey::P => properties.p = value,
             PropertyKey::X => properties.x = value,
@@ -106,21 +124,34 @@ impl PropertyKey{
             PropertyKey::A => properties.a = value,
         }
     }
+
+    pub fn get_type(self)-> PropertyType{
+        match self{
+            PropertyKey::P => PropertyType::AnyPositive,
+            PropertyKey::X => PropertyType::Any,
+            PropertyKey::Y => PropertyType::Any,
+            PropertyKey::R => PropertyType::Degrees,
+            PropertyKey::H => PropertyType::Degrees,
+            PropertyKey::S => PropertyType::UnitInterval,
+            PropertyKey::V => PropertyType::UnitInterval,
+            PropertyKey::A => PropertyType::UnitInterval,
+        }
+    }
 }
 
-impl std::str::FromStr for PropertyKey{   
+impl std::str::FromStr for PropertyKey {
     type Err = String;
 
     fn from_str(name: &str) -> Result<Self, Self::Err> {
         match name.to_ascii_lowercase().as_str() {
-            "p"  => Ok(PropertyKey::P),
-            "x" =>  Ok(PropertyKey::X),
-            "y" =>  Ok(PropertyKey::Y),
-            "r" =>  Ok(PropertyKey::R),
-            "h" =>  Ok(PropertyKey::H),
-            "s" =>  Ok(PropertyKey::S),
-            "v" =>  Ok(PropertyKey::V),
-            "a" =>  Ok(PropertyKey::A),
+            "p" => Ok(PropertyKey::P),
+            "x" => Ok(PropertyKey::X),
+            "y" => Ok(PropertyKey::Y),
+            "r" => Ok(PropertyKey::R),
+            "h" => Ok(PropertyKey::H),
+            "s" => Ok(PropertyKey::S),
+            "v" => Ok(PropertyKey::V),
+            "a" => Ok(PropertyKey::A),
             x => return Err(format!("Property '{}' not defined", x)).unwrap(),
         }
     }
@@ -135,7 +166,7 @@ pub struct TempProperty {
 impl TempProperty {
     pub fn try_parse(property: &mut Pairs<Rule>) -> Result<Self, String> {
         let name = property.next().unwrap().as_str();
-        let key =PropertyKey::from_str(name)?;
+        let key = PropertyKey::from_str(name)?;
 
         let next = property.next().unwrap().into_inner().next().unwrap();
 
@@ -165,7 +196,6 @@ impl TempProperty {
         Ok(Self { key, value: val })
     }
 }
-
 
 #[derive(PartialEq, PartialOrd, Clone)]
 pub struct Properties {
