@@ -57,6 +57,16 @@ circle w 0.5 l 0.9 v 0.9 r  90
 circle w 0.5 l 0.9 p 0.5 v 0.8 h 235
 ```
 
+```
+let hue 40
+pascal
+rul pascal
+triangle v0.5
+pascal h ?hue p 0.5 ym0.5
+pascal h ?hue p 0.5 y0.25 x0.5
+pascal h ?hue p 0.5 y0.25 xm0.5
+```
+
 
 ### Properties
 

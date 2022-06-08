@@ -1,4 +1,7 @@
 WHITESPACE = _{ " "| "\t" | NEWLINE }
+COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+
+
 keyword_let = {^"let"}
 keyword_rule = {^"rul"}
 keyword_end = {^"end"}
