@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, default};
+use std::{collections::BTreeMap, default, str::FromStr};
 
 use crate::core::prelude::*;
 use itertools::Itertools;
@@ -8,17 +8,34 @@ use pest::Parser;
 use pest_derive::Parser;
 use serde::{Deserialize, Serialize};
 
+#[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
+pub enum Value {
+    Number { val: f32 },
+    Variable { name: String },
+}
+
+impl Value {
+    pub fn try_get_value(&self, defs: &BTreeMap<String, f32>) -> Result<f32, String> {
+        match self {
+            Value::Number { val } => Ok(*val),
+            Value::Variable { name } => defs
+                .get(&name.to_ascii_lowercase())
+                .ok_or(format!("Varaible '{}' not defined", name))
+                .map(|&x| x),
+        }
+    }
+}
 
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct TempProperties {
-    p: TempValue,
-    x: TempValue,
-    y: TempValue,
-    r: TempValue,
-    h: TempValue,
-    s: TempValue,
-    v: TempValue,
-    a: TempValue,
+    p: Value,
+    x: Value,
+    y: Value,
+    r: Value,
+    h: Value,
+    s: Value,
+    v: Value,
+    a: Value,
 }
 
 impl TempProperties {
@@ -46,52 +63,79 @@ impl TempProperties {
     }
 }
 
-impl TryFrom<Vec<TempProperty>> for TempProperties {
-    type Error = String;
-
-    fn try_from(vector: Vec<TempProperty>) -> Result<Self, Self::Error> {
-        let mut properties = TempProperties::default();
-
-        for prop in vector {
-            match prop.name.to_ascii_lowercase().as_str() {
-                "p" => properties.p = prop.val,
-                "x" => properties.x = prop.val,
-                "y" => properties.y = prop.val,
-                "r" => properties.r = prop.val,
-                "h" => properties.h = prop.val,
-                "s" => properties.s = prop.val,
-                "v" => properties.v = prop.val,
-                x => return Err(format!("Property '{}' not defined", x)).unwrap(),
-            }
-        }
-        Ok(properties)
-    }
-}
 
 impl Default for TempProperties {
     fn default() -> Self {
         Self {
-            p: TempValue::Number { val: 1.0 },
-            x: TempValue::Number { val: 0.0 },
-            y: TempValue::Number { val: 0.0 },
-            r: TempValue::Number { val: 0.0 },
-            h: TempValue::Number { val: 0.0 },
-            s: TempValue::Number { val: 0.0 },
-            v: TempValue::Number { val: 0.0 },
-            a: TempValue::Number { val: 1.0 },
+            p: Value::Number { val: 1.0 },
+            x: Value::Number { val: 0.0 },
+            y: Value::Number { val: 0.0 },
+            r: Value::Number { val: 0.0 },
+            h: Value::Number { val: 0.0 },
+            s: Value::Number { val: 0.0 },
+            v: Value::Number { val: 0.0 },
+            a: Value::Number { val: 1.0 },
+        }
+    }
+}
+
+
+#[derive(PartialEq, PartialOrd, Clone, Copy, Serialize, Deserialize)]
+pub enum PropertyKey{
+    P,
+
+    X,
+    Y,
+
+    R,
+
+    H,S,V,A
+
+}
+
+impl PropertyKey{
+    pub fn set(self, properties: &mut TempProperties, value: Value){
+        match self {
+            PropertyKey::P => properties.p = value,
+            PropertyKey::X => properties.x = value,
+            PropertyKey::Y => properties.y = value,
+            PropertyKey::R => properties.r = value,
+            PropertyKey::H => properties.h = value,
+            PropertyKey::S => properties.s = value,
+            PropertyKey::V => properties.v = value,
+            PropertyKey::A => properties.a = value,
+        }
+    }
+}
+
+impl std::str::FromStr for PropertyKey{   
+    type Err = String;
+
+    fn from_str(name: &str) -> Result<Self, Self::Err> {
+        match name.to_ascii_lowercase().as_str() {
+            "p"  => Ok(PropertyKey::P),
+            "x" =>  Ok(PropertyKey::X),
+            "y" =>  Ok(PropertyKey::Y),
+            "r" =>  Ok(PropertyKey::R),
+            "h" =>  Ok(PropertyKey::H),
+            "s" =>  Ok(PropertyKey::S),
+            "v" =>  Ok(PropertyKey::V),
+            "a" =>  Ok(PropertyKey::A),
+            x => return Err(format!("Property '{}' not defined", x)).unwrap(),
         }
     }
 }
 
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct TempProperty {
-    pub name: String,
-    pub val: TempValue,
+    pub key: PropertyKey,
+    pub value: Value,
 }
 
 impl TempProperty {
-    pub fn parse(property: &mut Pairs<Rule>) -> Self {
-        let name = property.next().unwrap().as_str().to_ascii_lowercase();
+    pub fn try_parse(property: &mut Pairs<Rule>) -> Result<Self, String> {
+        let name = property.next().unwrap().as_str();
+        let key =PropertyKey::from_str(name)?;
 
         let next = property.next().unwrap().into_inner().next().unwrap();
 
@@ -109,16 +153,16 @@ impl TempProperty {
                     })
                     .collect();
                 let val = val_string.parse::<f32>().unwrap();
-                TempValue::Number { val }
+                Value::Number { val }
             }
             Rule::variable => {
                 let name = next.as_str().replacen('?', "", 1);
-                TempValue::Variable { name }
+                Value::Variable { name }
             }
             _ => unreachable!(),
         };
 
-        Self { name, val }
+        Ok(Self { key, value: val })
     }
 }
 

@@ -48,7 +48,7 @@ end
 
 | Name | ShortName | Default | Range | Wrapping | Description |
 |---|---|---|---|---|---|
-Proportion||`p`|`1.0`|`0.0..1.0`|`false`|The scale of this element. If 0.5, this element will be half the size of its parent. Elements with p 0 will be culled.|
+Proportion|`p`|`1.0`|`0.0..1.0`|`false`|The scale of this element. If 0.5, this element will be half the size of its parent. Elements with p 0 will be culled.|
 |X Transform|`x`|`0.0`|Any number|`false`|If 1.0, the x coordinate of the center of this element will be on the border of its parent.|
 |Y Transform|`y`|`0.0`|Any number|`false`|If 1.0, the y coordinate of the center of this element will be on the border of its parent.|
 |Rotation|`r`|`0`|`0..360`|`true`|The rotation of this element around the x axis. |

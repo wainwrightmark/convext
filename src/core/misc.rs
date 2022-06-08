@@ -116,25 +116,8 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
     })
 }
 
-//pub const PRIMITIVES: [&str; 2] = ["square", "circle"];
 
-#[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
-pub enum TempValue {
-    Number { val: f32 },
-    Variable { name: String },
-}
 
-impl TempValue {
-    pub fn try_get_value(&self, defs: &BTreeMap<String, f32>) -> Result<f32, String> {
-        match self {
-            TempValue::Number { val } => Ok(*val),
-            TempValue::Variable { name } => defs
-                .get(&name.to_ascii_lowercase())
-                .ok_or(format!("Varaible '{}' not defined", name))
-                .map(|&x| x),
-        }
-    }
-}
 
 
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
@@ -183,55 +166,18 @@ impl Invocation {
 
         let method = Primitive::from_str(&method_name).ok().map(|p|Method::Primitive(p)) .unwrap_or(Method::Rule(method_name));
 
-        let properties_vec = invocation
-            .map(|p| TempProperty::parse(&mut p.into_inner()))
-            .collect_vec();
+        let mut properties = TempProperties::default();
 
-        let properties = properties_vec.try_into()?;
+        for pair in invocation{
+            let mut inner = pair.into_inner();
+            let prop = TempProperty::try_parse(&mut inner)?;
+            prop.key.set(&mut properties, prop.value)
+        }
 
         Ok(Self { method, properties })
     }
 }
 
-#[derive(PartialEq, Clone, Serialize, Deserialize, Default)]
-pub struct Grammar {
-    pub top_level: Vec<Invocation>,
-    pub defs: BTreeMap<String, f32>,
-    pub rules: BTreeMap<String, UserRule>,
-}
-
-impl Grammar {
-    pub fn expand(&self, settings: ExpandSettings) -> Node {
-        let mut current = ExpandStatistics::default();
-        let nodes = self
-            .top_level
-            .iter()
-            .map(|i| i.to_node(&Properties::default_initial(), self))
-            .collect_vec();
-
-        let mut root = Node {
-            invocation: Invocation {
-                method: Method::Root,
-                properties: Default::default(),
-            },
-            absolute_properties: Properties::default_initial(),
-            children: Some(nodes),
-        };
-        loop {
-            let changes = root.expand_once(settings, self);
-
-            current = current + &changes;
-            if changes.new_nodes == 0 {
-                break;
-            }
-            if current.new_nodes >= settings.max_nodes {
-                break;
-            }
-        }
-
-        root
-    }
-}
 
 
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
@@ -308,7 +254,6 @@ impl Node {
                 .get_children(&self.absolute_properties, grammar)
                 .into_iter()
                 .filter_map(|node| {
-                    //let node = c.invocation.to_node(&self.absolute_properties, grammar);
                     if settings.should_cull(&node) {
                         stats.nodes_culled += 1;
                         None
@@ -319,24 +264,6 @@ impl Node {
                 })
                 .collect_vec();
 
-            // .rule {
-            //     Command::User { rule } => rule
-            //         .children
-            //         .iter()
-            //         .filter_map(|c| {
-            //             let node = c.to_node(&self.absolute_properties);
-            //             if settings.should_cull(&node) {
-            //                 stats.nodes_culled += 1;
-            //                 None
-            //             } else {
-            //                 stats.new_nodes += 1;
-            //                 Some(node)
-            //             }
-            //         })
-            //         .collect_vec(),
-            //     _ => Default::default(),
-            // };
-
             self.children = Some(new_children);
         };
 
@@ -344,57 +271,6 @@ impl Node {
     }
 }
 
-#[derive(Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ExpandStatistics {
-    new_nodes: usize,
-    nodes_culled: usize,
-}
 
-impl std::ops::Add<&ExpandStatistics> for ExpandStatistics {
-    type Output = ExpandStatistics;
-
-    fn add(self, rhs: &ExpandStatistics) -> Self::Output {
-        Self {
-            new_nodes: self.new_nodes + rhs.new_nodes,
-            nodes_culled: self.nodes_culled + rhs.nodes_culled,
-        }
-    }
-}
-
-#[derive(Clone, Copy, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct ExpandSettings {
-    max_nodes: usize,
-    max_depth: usize,
-    min_a: f32,
-    min_p: f32,
-}
-
-impl ExpandSettings {
-    ///Should this node be culled, according to the settings
-    pub fn should_cull(&self, node: &Node) -> bool {
-        if node.absolute_properties.a < self.min_a {
-            true
-        } else if node.absolute_properties.d > self.max_depth {
-            true
-        } else if node.absolute_properties.p < self.min_p {
-            true
-        } else if node.absolute_properties.x.abs() - node.absolute_properties.p > 1.5 {
-            true
-        } else {
-            node.absolute_properties.y.abs() - node.absolute_properties.p > 1.5
-        }
-    }
-}
-
-impl Default for ExpandSettings {
-    fn default() -> Self {
-        Self {
-            max_nodes: 1000,
-            max_depth: 10,
-            min_a: 0.01,
-            min_p: 0.001,
-        }
-    }
-}
 
 
