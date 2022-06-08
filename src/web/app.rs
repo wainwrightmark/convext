@@ -53,27 +53,38 @@ pub fn input_slider(properties: &InputSliderProperties) -> Html {
         let (min, max, step) = p_type.deconstruct();
 
         let key2 = key.clone();
+        let key3 = key.clone();
 
-        let oninput = Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: InputEvent|{
+        let on_slider_input = Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: InputEvent|{
             let input : HtmlInputElement = e.target_unchecked_into();
             let new_value = input.value();
             let new_f_value:f32 = new_value.parse().unwrap();
             s.set_variable_value(key2.clone(), new_f_value);
         });
+        
+        let on_box_input = Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: InputEvent|{
+            let input : HtmlInputElement = e.target_unchecked_into();
+            let new_value = input.value();
+            let new_f_value:f32 = new_value.parse().unwrap();
+            s.set_variable_value(key3.clone(), new_f_value);
+        });
 
         html!(
                 <div class="slider">
 
-          <input {oninput} type="range" id={key.clone()} name={key.clone()} value={format!("{}",value )} min={format!("{}",min )} max={format!("{}",max )}  step={format!("{}",step )} />
-          <label for={key.clone()}>{format!("{}: {}", key, value)}</label>
+            <code style="width:100px" >{format!("{}", key)}</code>
+          <input oninput={on_slider_input} type="range"  value={format!("{}",value )} min={format!("{}",min )} max={format!("{}",max )}  step={format!("{}",step )} />
+          <input  oninput={on_box_input} type="number"  value={format!("{}",value )} min={format!("{}",min )} max={format!("{}",max )}  step={format!("{}",step )} />
+          
+          
         </div>
             )
     } else {
         html!(
                 <div class="slider">
 
-          <input type="range" id={key.clone()} name={key.clone()} value={format!("{}",value )} disabled=true />
-          <label for={key.clone()}>{format!("{}: {}", key, value)}</label>
+          <input type="range"  value={format!("{}",value )} disabled=true />
+          <code >{format!("{}: {}", key, value)}</code>
         </div>
             )
     }

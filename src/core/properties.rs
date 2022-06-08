@@ -41,7 +41,7 @@ impl PropertyType {
             PropertyType::UnitInterval => (0.0, 1.0, 0.05),
             PropertyType::AnyPositive => (0.0, 2.0, 0.05),
             PropertyType::Any => (-2.0, 2.0, 0.05),
-            PropertyType::Degrees => (0.0, 360.0, 15.0),
+            PropertyType::Degrees => (0.0, 360.0, 5.0),
         }
     }
 }
