@@ -35,14 +35,14 @@ impl Primitive {
         ),
             Primitive::Square =>{
 
-                let x= relative_properties.x -( relative_properties.p) ;
-                let y =  relative_properties.y -(relative_properties.p) ;
+                let x= relative_properties.x -( relative_properties.p * absolute_properties.w) ;
+                let y =  relative_properties.y -(relative_properties.p * absolute_properties.l) ;
 
                 let width =  relative_properties.p *absolute_properties.w * 2.0;
                 let height =  relative_properties.p *absolute_properties.l * 2.0;
 
-                let rx = width * absolute_properties.c / 2.0;
-                let ry = height * absolute_properties.c / 2.0;
+                let rx = relative_properties.p * absolute_properties.c ;
+                let ry = relative_properties.p * absolute_properties.c ;
 
                 format!("<rect x={x} y={y} width={width} height={height} rx={rx} ry={ry} fill=\"hsl({h}, {s}%, {l}%)\" stroke=\"none\" {rotate_transform} />", 
                 x=x,

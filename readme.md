@@ -48,6 +48,15 @@ blackshape p 0.5 x 0.5 y 0.5 r?blackrot h?hue
 end
 ```
 
+```
+eye p 0.2 xm0.3ym0.3
+eye p 0.2 x0.3ym0.3
+
+rul eye
+circle w 0.5 l 0.9 v 0.9 r  90
+circle w 0.5 l 0.9 p 0.5 v 0.8 h 235
+```
+
 
 ### Properties
 
