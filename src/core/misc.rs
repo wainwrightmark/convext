@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, default};
+use std::{collections::BTreeMap, default, str::FromStr};
 
 use crate::core::prelude::*;
 use itertools::Itertools;
@@ -19,7 +19,7 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
     let mut defs = BTreeMap::<String, f32>::default();
     let mut temp_rules = BTreeMap::<String, UserRule>::default();
 
-    let mut temp_top_level = Vec::<TempInvocation>::default();
+    let mut temp_top_level = Vec::<Invocation>::default();
 
     for pair in file.into_inner() {
         match pair.as_rule() {
@@ -28,7 +28,7 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
 
                 match statement.as_rule() {
                     Rule::invocation => {
-                        let ii = TempInvocation::try_parse(&mut statement.into_inner())?;
+                        let ii = Invocation::try_parse(&mut statement.into_inner())?;
                         temp_top_level.push(ii);
                     }
                     Rule::rule => {
@@ -36,14 +36,14 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
                         let rule_keyword = inner.next();
                         let name = inner.next().unwrap().as_str().to_string();
 
-                        let mut invocations = Vec::<TempInvocation>::new();
+                        let mut invocations = Vec::<Invocation>::new();
 
                         for p in inner {
                             match p.as_rule() {
                                 Rule::EOI => (),
                                 Rule::keyword_end => (),
                                 Rule::invocation => {
-                                    let ti = TempInvocation::try_parse(&mut p.into_inner())?;
+                                    let ti = Invocation::try_parse(&mut p.into_inner())?;
                                     invocations.push(ti);
                                 }
                                 _ => unreachable!(),
@@ -94,21 +94,18 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
         }
     }
 
-    for invocation in temp_top_level.iter() {
-        if !temp_rules.contains_key(&invocation.rule.to_ascii_lowercase())
-            && !PRIMITIVES.contains(&invocation.rule.to_ascii_lowercase().as_str())
+    for rule_name in temp_top_level.iter().filter_map(|i|if let Method::Rule(r) = i.method.clone() {Some(r)} else{None} ) {        if !temp_rules.contains_key(&rule_name)            
         {
-            return Err(format!("Rule '{}' does not exist", invocation.rule));
+            return Err(format!("Rule '{}' does not exist", rule_name));
         }
     }
 
     for (_, rule) in temp_rules.iter() {
-        for invocation in rule.children.iter() {
-            if !temp_rules.contains_key(&invocation.rule.to_ascii_lowercase())
-                && !PRIMITIVES.contains(&invocation.rule.to_ascii_lowercase().as_str())
-            {
-                return Err(format!("Rule '{}' does not exist", invocation.rule));
-            }
+        for rule_name in rule.children.iter().filter_map(|i|if let Method::Rule(r) = i.method.clone() {Some(r)} else{None} ) {
+            if !temp_rules.contains_key(&rule_name)            
+        {
+            return Err(format!("Rule '{}' does not exist", rule_name));
+        }
         }
     }
 
@@ -119,7 +116,7 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
     })
 }
 
-pub const PRIMITIVES: [&str; 2] = ["square", "circle"];
+//pub const PRIMITIVES: [&str; 2] = ["square", "circle"];
 
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub enum TempValue {
@@ -139,136 +136,37 @@ impl TempValue {
     }
 }
 
-#[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
-pub struct TempProperties {
-    p: TempValue,
-    x: TempValue,
-    y: TempValue,
-    r: TempValue,
-    h: TempValue,
-    s: TempValue,
-    v: TempValue,
-    a: TempValue,
-}
-
-impl TempProperties {
-    pub fn try_convert(&self, values: &BTreeMap<String, f32>) -> Result<Properties, String> {
-        let p = self.p.try_get_value(values)?;
-        let x = self.x.try_get_value(values)?;
-        let y = self.y.try_get_value(values)?;
-        let r = self.r.try_get_value(values)?;
-        let h = self.h.try_get_value(values)?;
-        let s = self.s.try_get_value(values)?;
-        let v = self.v.try_get_value(values)?;
-        let a = self.a.try_get_value(values)?;
-
-        Ok(Properties {
-            p,
-            x,
-            y,
-            r,
-            h,
-            s,
-            v,
-            a,
-            d: 1,
-        })
-    }
-}
-
-impl TryFrom<Vec<TempProperty>> for TempProperties {
-    type Error = String;
-
-    fn try_from(vector: Vec<TempProperty>) -> Result<Self, Self::Error> {
-        let mut properties = TempProperties::default();
-
-        for prop in vector {
-            match prop.name.to_ascii_lowercase().as_str() {
-                "p" => properties.p = prop.val,
-                "x" => properties.x = prop.val,
-                "y" => properties.y = prop.val,
-                "r" => properties.r = prop.val,
-                "h" => properties.h = prop.val,
-                "s" => properties.s = prop.val,
-                "v" => properties.v = prop.val,
-                x => return Err(format!("Property '{}' not defined", x)).unwrap(),
-            }
-        }
-        Ok(properties)
-    }
-}
-
-impl Default for TempProperties {
-    fn default() -> Self {
-        Self {
-            p: TempValue::Number { val: 1.0 },
-            x: TempValue::Number { val: 0.0 },
-            y: TempValue::Number { val: 0.0 },
-            r: TempValue::Number { val: 0.0 },
-            h: TempValue::Number { val: 0.0 },
-            s: TempValue::Number { val: 0.0 },
-            v: TempValue::Number { val: 0.0 },
-            a: TempValue::Number { val: 1.0 },
-        }
-    }
-}
 
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
-pub struct TempProperty {
-    pub name: String,
-    pub val: TempValue,
+pub enum Method{
+    Root,
+    Primitive(Primitive),
+    Rule(String)
+
 }
 
-impl TempProperty {
-    pub fn parse(property: &mut Pairs<Rule>) -> Self {
-        let name = property.next().unwrap().as_str().to_ascii_lowercase();
-
-        let next = property.next().unwrap().into_inner().next().unwrap();
-
-        let rule = next.as_rule();
-
-        let val = match rule {
-            Rule::number => {
-                let val_string: String = next
-                    .as_str()
-                    .chars()
-                    .map(|c| match c {
-                        'm' => '-',
-                        'M' => '-',
-                        _ => c,
-                    })
-                    .collect();
-                let val = val_string.parse::<f32>().unwrap();
-                TempValue::Number { val }
-            }
-            Rule::variable => {
-                let name = next.as_str().replacen('?', "", 1);
-                TempValue::Variable { name }
-            }
-            _ => unreachable!(),
-        };
-
-        Self { name, val }
-    }
-}
 
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
-pub struct TempInvocation {
-    pub rule: String,
+pub struct Invocation {
+    pub method: Method,
     pub properties: TempProperties,
 }
 
-impl TempInvocation {
-    pub fn try_parse(invocation: &mut Pairs<Rule>) -> Result<Self, String> {
-        let rule = invocation.next().unwrap().as_str().to_string();
+impl Invocation {
+    pub fn get_children(&self, absolute_properties: &Properties, grammar: &Grammar) -> Vec<Node> {
 
-        let properties_vec = invocation
-            .map(|p| TempProperty::parse(&mut p.into_inner()))
-            .collect_vec();
-
-        let properties = properties_vec.try_into()?;
-
-        Ok(Self { rule, properties })
+        match self.method.clone() {
+            Method::Primitive(_) => Default::default(),
+            Method::Root => unreachable!(), 
+            Method::Rule(r) => grammar.rules
+            .get(&r)
+            .unwrap()
+            .children
+            .iter()
+            .map(|c| c.to_node(absolute_properties, grammar))
+            .collect_vec(),
+        
+        }
     }
 
     pub fn to_node(&self, parent_properties: &Properties, grammar: &Grammar) -> Node {
@@ -280,31 +178,30 @@ impl TempInvocation {
         }
     }
 
-    pub fn get_children(&self, absolute_properties: &Properties, grammar: &Grammar) -> Vec<Node> {
-        match self.rule.to_ascii_lowercase().as_str() {
-            "circle" => Default::default(), // Command::Circle,
-            "square" => Default::default(),
-            x => grammar
-                .rules
-                .get(x)
-                .unwrap()
-                .children
-                .iter()
-                .map(|c| c.to_node(absolute_properties, grammar))
-                .collect_vec(),
-        }
+    pub fn try_parse(invocation: &mut Pairs<Rule>) -> Result<Self, String> {
+        let method_name = invocation.next().unwrap().as_str().to_ascii_lowercase();
+
+        let method = Primitive::from_str(&method_name).ok().map(|p|Method::Primitive(p)) .unwrap_or(Method::Rule(method_name));
+
+        let properties_vec = invocation
+            .map(|p| TempProperty::parse(&mut p.into_inner()))
+            .collect_vec();
+
+        let properties = properties_vec.try_into()?;
+
+        Ok(Self { method, properties })
     }
 }
 
 #[derive(PartialEq, Clone, Serialize, Deserialize, Default)]
 pub struct Grammar {
-    pub top_level: Vec<TempInvocation>,
+    pub top_level: Vec<Invocation>,
     pub defs: BTreeMap<String, f32>,
     pub rules: BTreeMap<String, UserRule>,
 }
 
 impl Grammar {
-    pub fn to_root_node(&self, settings: ExpandSettings) -> Node {
+    pub fn expand(&self, settings: ExpandSettings) -> Node {
         let mut current = ExpandStatistics::default();
         let nodes = self
             .top_level
@@ -313,8 +210,8 @@ impl Grammar {
             .collect_vec();
 
         let mut root = Node {
-            invocation: TempInvocation {
-                rule: "root".to_string(),
+            invocation: Invocation {
+                method: Method::Root,
                 properties: Default::default(),
             },
             absolute_properties: Properties::default_initial(),
@@ -336,39 +233,17 @@ impl Grammar {
     }
 }
 
-// #[derive(PartialEq, PartialOrd, Clone)]
-// pub enum Command {
-//     Root,
-//     Circle,
-//     Square,
-//     User { rule: Rc<UserRule> },
-// }
 
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct UserRule {
     pub name: String,
-    pub children: Vec<TempInvocation>,
+    pub children: Vec<Invocation>,
 }
 
-// #[derive(PartialEq, PartialOrd, Clone)]
-// pub struct Invocation {
-//     pub command: Command,
-//     pub properties: Properties,
-// }
-
-// impl Invocation {
-//     pub fn to_node(&self, parent_properties: &Properties) -> Node {
-//         Node {
-//             invocation: self.clone(),
-//             absolute_properties: parent_properties.make_absolute(&self.properties),
-//             children: None,
-//         }
-//     }
-// }
 
 #[derive(PartialEq, PartialOrd, Clone)]
 pub struct Node {
-    pub invocation: TempInvocation,
+    pub invocation: Invocation,
     pub absolute_properties: Properties,
     pub children: Option<Vec<Node>>,
 }
@@ -409,32 +284,12 @@ impl Node {
             
             child_text = child_text)
         } else {
-            //let absolute_properties = self.absolute_properties;//.make_absolute(&properties);
+            
 
-            match self.invocation.rule.as_str() {
-                "circle" => {
-                    format!("<circle cx={x} cy={y} r={p} fill=\"hsl({h}, {s}%, {l}%)\" stroke=\"none\"   />", 
-                    x= relative_properties.x,
-                    y =  relative_properties.y,
-                    //ignore rotation
-                    p = relative_properties.p,
-                    h = self.absolute_properties.h ,
-                    s = self.absolute_properties.s * 100.0 ,
-                    l = self.absolute_properties.v  * 100.0,                
-                )
-                }
-                "square" => {
-                    format!("<rect x={x} y={y} width={p} height={p} fill=\"hsl({h}, {s}%, {l}%)\" stroke=\"none\" style=\"transform: rotate({r}deg);\" />", 
-                    x= relative_properties.x -( relative_properties.p) ,
-                    y =  relative_properties.y -(relative_properties.p) ,
-                    r = relative_properties.r,
-                    p =  relative_properties.p  * 2.0,
-                    h = self.absolute_properties.h ,
-                    s = self.absolute_properties.s * 100.0 ,
-                    l = self.absolute_properties.v  * 100.0,                
-                )
-                }
-                _ => "".to_string(),
+            match self.invocation.method{
+                Method::Root => "".to_string(),
+                Method::Primitive(p) => p.to_svg(&relative_properties, &self.absolute_properties),
+                Method::Rule(_) => "".to_string(),
             }
         }
     }
@@ -542,65 +397,4 @@ impl Default for ExpandSettings {
     }
 }
 
-#[derive(PartialEq, PartialOrd, Clone)]
-pub struct Properties {
-    p: f32,
-    x: f32,
-    y: f32,
-    r: f32,
-    h: f32,
-    s: f32,
-    v: f32,
-    a: f32,
-    d: usize,
-}
 
-impl Properties {
-    ///Make absolute child properties from the child relative propeties
-    pub fn make_absolute(&self, child: &Self) -> Self {
-        let x2 = self.p
-            * ((self.r.to_radians().cos() * child.x) - (self.r.to_radians().sin() * child.y));
-        let y2 = self.p
-            * ((self.r.to_radians().sin() * child.x) + (self.r.to_radians().cos() * child.y));
-
-        Self {
-            p: (self.p * child.p).clamp(0.0, 1.0),
-            x: self.x + x2,
-            y: self.y + y2,
-            r: (((self.r + child.r) % 360.0) + 360.0) % 360.0,
-            h: (((self.h + child.h) % 360.0) + 360.0) % 360.0,
-            s: (self.s + child.s).clamp(0.0, 1.0),
-            v: (self.v + child.v).clamp(0.0, 1.0),
-            a: (self.a * child.a).clamp(0.0, 1.0),
-            d: self.d + child.d,
-        }
-    }
-
-    fn default_initial() -> Self {
-        Self {
-            p: 1.0,
-            x: Default::default(),
-            y: Default::default(),
-            r: Default::default(),
-            h: Default::default(),
-            s: 1.0,
-            v: 0.0,
-            a: 1.0,
-            d: Default::default(),
-        }
-    }
-
-    fn default_additive() -> Self {
-        Self {
-            p: 1.0,
-            x: Default::default(),
-            y: Default::default(),
-            r: Default::default(),
-            h: Default::default(),
-            s: 0.0,
-            v: 0.0,
-            a: 1.0,
-            d: 1,
-        }
-    }
-}

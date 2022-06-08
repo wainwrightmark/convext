@@ -1,0 +1,10 @@
+- [ ] Editor for prop values
+- [ ] Evolution editor
+- [ ] Length and width `l` and `w`
+- [ ] Allow probabilities for rules 
+- [ ] Add ranges (animation? randomness)
+- [ ] More primitives `tri` `rtri` `pent` `hex`
+- [ ] Support math operators `min` `add` `mul` `div` `abs`
+- [ ] Support comparison operators `eq` `neq` `lt` `gt` `leq` `geq`
+- [ ] Support logic operators `and` `or` `xor` `not`
+- [ ] Support conditionals `if` `elif`  `else` `fi`

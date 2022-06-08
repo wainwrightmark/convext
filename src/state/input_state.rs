@@ -36,7 +36,7 @@ impl InputState {
     pub fn get_svg_text(&self) -> Result<String, String> {
         let grammar = parse(self.text.as_str())?;
 
-        let node = grammar.to_root_node(self.settings);
+        let node = grammar.expand(self.settings);
 
         let svg = node.to_svg(&grammar);
 

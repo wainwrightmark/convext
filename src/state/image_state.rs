@@ -28,7 +28,7 @@ impl Default for ImageState{
 
 impl ImageState {
     pub fn update_settings(&mut self, settings: ExpandSettings) {
-        let node = self.grammar.to_root_node(settings);
+        let node = self.grammar.expand(settings);
         let svg = node.to_svg(&self.grammar);
 
         self.svg = svg;
@@ -41,7 +41,7 @@ impl ImageState {
             Ok(grammar) => {
                 self.error = None;
                 if self.grammar != grammar {
-                    let node = grammar.to_root_node(settings);
+                    let node = grammar.expand(settings);
                     let svg = node.to_svg(&grammar);
 
                     self.grammar = grammar;

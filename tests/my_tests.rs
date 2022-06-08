@@ -39,7 +39,7 @@ fn test_svg(index: usize) {
     let input = EXAMPLES[index];
     let grammar = parse(input).unwrap();
 
-    let node = grammar.to_root_node(ExpandSettings::default());
+    let node = grammar.expand(ExpandSettings::default());
 
     let svg = node.to_svg(&grammar);
 
