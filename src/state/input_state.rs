@@ -17,7 +17,7 @@ pub struct InputState {
 impl Default for InputState {
     fn default() -> Self {
         Self {
-            text: "circle".to_string(),
+            text: "circle v 0.5\r\ncircle p 0.5 v 0.5 h 120".to_string(),
             settings: Default::default(),
         }
     }
