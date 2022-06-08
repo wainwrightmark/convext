@@ -16,3 +16,5 @@
 - [ ] Diagnostics
 - [ ] Code Completion
 - [ ] Hover
+- [ ] Rename
+- [ ] Duplicate Line
