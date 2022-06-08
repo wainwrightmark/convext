@@ -9,16 +9,15 @@ use yewdux::prelude::*;
 
 #[function_component(App)]
 pub fn app() -> Html {
-
     html! {
 
-            <div class="paper container margin-bottom-large" style="display: flex; flex-direction: column;">
-            
-                <InputBox />
-                <DisplayBox/>
+        <div class="paper container margin-bottom-large" style="display: flex; flex-direction: column;">
 
-            </div>
-        }
+            <InputBox />
+            <DisplayBox/>
+
+        </div>
+    }
 }
 
 #[function_component(InputBox)]
@@ -28,39 +27,40 @@ pub fn input_box() -> Html {
 
     let oninput = Dispatch::<InputState>::new().reduce_mut_callback_with(|s, e: InputEvent| {
         let input: HtmlTextAreaElement = e.target_unchecked_into();
-            let value = input.value();
-            s.update_text(value);
+        let value = input.value();
+        s.update_text(value);
     });
 
     html!(
-        <div>
-<p>
+            <div>
+    <p>
 
-</p>
-//https://css-tricks.com/creating-an-editable-textarea-that-supports-syntax-highlighted-code/
-        <textarea id="input-textarea" name="input-textarea" class="input-textarea" rows="10" {oninput} 
-        value={text}
-        spellcheck="false"
-        >
-        </textarea>
-        </div>
-    )
+    </p>
+    //https://css-tricks.com/creating-an-editable-textarea-that-supports-syntax-highlighted-code/
+            <textarea id="input-textarea" name="input-textarea" class="input-textarea" rows="10" {oninput}
+            value={text}
+            spellcheck="false"
+            >
+            </textarea>
+            </div>
+        )
 }
 
 #[function_component(DisplayBox)]
-pub fn diplay_box() -> Html{
-
-    let svg = use_selector(|s: &ImageState| s.svg.clone() ).as_ref().clone();
-    let err = use_selector(|s: &ImageState| s.error.clone() ).as_ref().clone() .unwrap_or("".to_string());
-
+pub fn diplay_box() -> Html {
+    let svg = use_selector(|s: &ImageState| s.svg.clone())
+        .as_ref()
+        .clone();
+    let err = use_selector(|s: &ImageState| s.error.clone())
+        .as_ref()
+        .clone()
+        .unwrap_or("".to_string());
 
     html!(
-        <>
-        
-        <iframe class="display-iframe" srcdoc={svg} scrolling="no"></iframe>
-        <code> {err} </code>
-        </>
-)
+            <>
+
+            <iframe class="display-iframe" srcdoc={svg} scrolling="no"></iframe>
+            <code> {err} </code>
+            </>
+    )
 }
-
-
