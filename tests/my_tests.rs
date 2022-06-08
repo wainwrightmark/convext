@@ -3,8 +3,9 @@ use convext::core::prelude::*;
 use ntest::test_case;
 // use rand::{prelude::StdRng, Rng};
 
-pub const EXAMPLES: [&str; 5] = [
+pub const EXAMPLES: [&str; 6] = [
     "Circle",
+    "Circle p0.5",
     "let myvar 100
 square h ?myvar",
     "circle circle p 0.5 h 120",
@@ -33,6 +34,7 @@ end",
 #[test_case(2)]
 #[test_case(3)]
 #[test_case(4)]
+#[test_case(5)]
 fn test_svg(index: usize) {
     let input = EXAMPLES[index];
     let grammar = parse(input).unwrap();
