@@ -13,7 +13,8 @@ use serde::{Deserialize, Serialize, __private::de};
 pub enum Primitive{
     Circle,
     Square,
-    Triangle,
+    RightTriangle,
+    Polygon(usize),
     //TODO others
 }
 
@@ -74,9 +75,19 @@ impl Primitive {
             )
 
             } ,
+            Primitive::RightTriangle=>{
+                let points = [(0.0,-1.0), (1.0,1.0), (-1.0,1.0)].into_iter() .flat_map(
+                    |(x,y)| [(x * relative_properties.p * absolute_properties.w) + relative_properties.x, (y * relative_properties.p * absolute_properties.l) + relative_properties.y]).join(" ");
 
-            Primitive::Triangle =>{
-                let points = Self::get_polygon_points(3).flat_map(
+                
+                format!("<polygon points=\"{points}\" {color} {rotate_transform}/>",
+             
+
+                rotate_transform = rotate_transform)
+            }
+
+            Primitive::Polygon(sides) =>{
+                let points = Self::get_polygon_points(*sides).flat_map(
                     |(x,y)| [(x * relative_properties.p * absolute_properties.w) + relative_properties.x, (y * relative_properties.p * absolute_properties.l) + relative_properties.y]).join(" ");
 
                 
@@ -98,7 +109,16 @@ impl std::str::FromStr for Primitive{
         match s {
             "circle"=> Ok(Primitive::Circle),
             "square"=> Ok(Primitive::Square),
-            "triangle"=> Ok(Primitive::Triangle),
+            "rtriangle" => Ok(Primitive::RightTriangle),
+            "triangle"=> Ok(Primitive::Polygon(3)),
+            "pentagon"=> Ok(Primitive::Polygon(5)),
+            "hexagon"=> Ok(Primitive::Polygon(6)),
+            "heptagon"=> Ok(Primitive::Polygon(7)),
+            "octagon"=> Ok(Primitive::Polygon(8)),
+            "nonagon"=> Ok(Primitive::Polygon(9)),
+            "decagon"=> Ok(Primitive::Polygon(10)),
+            "undecagon"=> Ok(Primitive::Polygon(11)),
+            "dodecagon"=> Ok(Primitive::Polygon(12)),
             _=> Err("Could not parse".to_string())
         }
     }

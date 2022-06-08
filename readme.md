@@ -66,6 +66,20 @@ pascal h ?hue p 0.5 ym0.5
 pascal h ?hue p 0.5 y0.25 x0.5
 pascal h ?hue p 0.5 y0.25 xm0.5
 ```
+### Primitives
+
+- `Circle`
+- `triangle`
+- `rtriangle`
+- `square`
+- `pentagon`
+- `hexagon`
+- `heptagon`
+- `octagon`
+- `nonagon`
+- `decagon`
+- `undecagon`
+- `dodecagon`
 
 
 ### Properties
