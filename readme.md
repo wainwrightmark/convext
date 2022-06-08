@@ -33,7 +33,7 @@ let blackrot 15
 let whiterot 15
 let hue 90
 
-blackshape h 80 r 15 p 0.75
+blackshape h 80 r 15 p 0.75 c 0.3
 
 rul blackshape
 square v 0.5 h 180
@@ -53,9 +53,10 @@ end
 
 | Name | Key | Range | Description |
 |---|---|---|---|
-Proportion|`p`|`0..`|The scale of this element. If 0.5, this element will be half the size of its parent. Elements with p 0 will be culled.|
-Length|`l`|`0..`|The scale of this element in the y axis. |
-Width|`w`|`0..`|The scale of this element in the x axis. |
+|Proportion|`p`|`0..`|The scale of this element. If 0.5, this element will be half the size of its parent. Elements with p 0 will be culled.|
+|Length|`l`|`0..`|The scale of this element in the y axis. |
+|Width|`w`|`0..`|The scale of this element in the x axis. |
+|Curvature|`c`|`0..1`|How rounded the corners of polygons will be. |
 |X|`x`|`..`|If 1.0, the x coordinate of the center of this element will be on the border of its parent.|
 |Y|`y`|`..`|If 1.0, the y coordinate of the center of this element will be on the border of its parent.|
 |Rotation|`r`|`0..360`|The rotation of this element around the x axis. |

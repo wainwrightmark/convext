@@ -18,3 +18,6 @@
 - [ ] Hover
 - [ ] Rename
 - [ ] Duplicate Line
+
+- [ ] Export SVG
+- [ ] Css Classes

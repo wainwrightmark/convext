@@ -33,16 +33,31 @@ impl Primitive {
             l = absolute_properties.v  * 100.0,                
             rotate_transform = rotate_transform
         ),
-            Primitive::Square => format!("<rect x={x} y={y} width={width} height={height} fill=\"hsl({h}, {s}%, {l}%)\" stroke=\"none\" {rotate_transform} />", 
-            x= relative_properties.x -( relative_properties.p) ,
-            y =  relative_properties.y -(relative_properties.p) ,            
-            width =  relative_properties.p *absolute_properties.w * 2.0,
-            height =  relative_properties.p *absolute_properties.l * 2.0,
-            h = absolute_properties.h ,
-            s = absolute_properties.s * 100.0 ,
-            l = absolute_properties.v  * 100.0,                
-            rotate_transform = rotate_transform
-        ),
+            Primitive::Square =>{
+
+                let x= relative_properties.x -( relative_properties.p) ;
+                let y =  relative_properties.y -(relative_properties.p) ;
+
+                let width =  relative_properties.p *absolute_properties.w * 2.0;
+                let height =  relative_properties.p *absolute_properties.l * 2.0;
+
+                let rx = width * absolute_properties.c / 2.0;
+                let ry = height * absolute_properties.c / 2.0;
+
+                format!("<rect x={x} y={y} width={width} height={height} rx={rx} ry={ry} fill=\"hsl({h}, {s}%, {l}%)\" stroke=\"none\" {rotate_transform} />", 
+                x=x,
+                y=y,            
+                rx = rx,
+                ry=ry,
+                width=width,
+                height=height,
+                h = absolute_properties.h ,
+                s = absolute_properties.s * 100.0 ,
+                l = absolute_properties.v  * 100.0,                
+                rotate_transform = rotate_transform
+            )
+
+            } ,
         }
     }
 }
