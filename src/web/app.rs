@@ -54,13 +54,12 @@ pub fn diplay_box() -> Html {
     let err = use_selector(|s: &ImageState| s.error.clone())
         .as_ref()
         .clone()
-        .unwrap_or("".to_string());
+        .unwrap_or("‎".to_string());
 
     html!(
             <>
-
-            <iframe class="display-iframe" srcdoc={svg} scrolling="no"></iframe>
             <code> {err} </code>
+            <iframe class="display-iframe" srcdoc={svg} scrolling="no"></iframe>            
             </>
     )
 }
