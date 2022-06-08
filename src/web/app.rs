@@ -54,7 +54,7 @@ pub fn input_slider(properties: &InputSliderProperties) -> Html {
 
         let key2 = key.clone();
 
-        let onchange = Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: Event|{
+        let oninput = Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: InputEvent|{
             let input : HtmlInputElement = e.target_unchecked_into();
             let new_value = input.value();
             let new_f_value:f32 = new_value.parse().unwrap();
@@ -64,7 +64,7 @@ pub fn input_slider(properties: &InputSliderProperties) -> Html {
         html!(
                 <div class="slider">
 
-          <input {onchange} type="range" id={key.clone()} name={key.clone()} value={format!("{}",value )} min={format!("{}",min )} max={format!("{}",max )}  step={format!("{}",step )} />
+          <input {oninput} type="range" id={key.clone()} name={key.clone()} value={format!("{}",value )} min={format!("{}",min )} max={format!("{}",max )}  step={format!("{}",step )} />
           <label for={key.clone()}>{format!("{}: {}", key, value)}</label>
         </div>
             )
