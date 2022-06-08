@@ -132,11 +132,11 @@ pub enum Method{
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct Invocation {
     pub method: Method,
-    pub properties: TempProperties,
+    pub properties: Vec<TempProperty>,
 }
 
 impl Invocation {
-    pub fn get_children(&self, absolute_properties: &Properties, grammar: &Grammar) -> Vec<Node> {
+    pub fn get_children(&self, absolute_properties: &NodeProperties, grammar: &Grammar) -> Vec<Node> {
 
         match self.method.clone() {
             Method::Primitive(_) => Default::default(),
@@ -152,11 +152,11 @@ impl Invocation {
         }
     }
 
-    pub fn to_node(&self, parent_properties: &Properties, grammar: &Grammar) -> Node {
+    pub fn to_node(&self, parent_properties: &NodeProperties, grammar: &Grammar) -> Node {
         Node {
             invocation: self.clone(),
             absolute_properties: parent_properties
-                .make_absolute(&self.properties.try_convert(&grammar.defs).unwrap()),
+                .make_absolute(&NodeProperties::from_temp(&self.properties, &grammar. defs)),
             children: None,
         }
     }
@@ -166,12 +166,12 @@ impl Invocation {
 
         let method = Primitive::from_str(&method_name).ok().map(|p|Method::Primitive(p)) .unwrap_or(Method::Rule(method_name));
 
-        let mut properties = TempProperties::default();
+        let mut properties = Vec::<TempProperty>::new();
 
         for pair in invocation{
             let mut inner = pair.into_inner();
             let prop = TempProperty::try_parse(&mut inner)?;
-            prop.key.set(&mut properties, prop.value)
+            properties.push(prop);
         }
 
         Ok(Self { method, properties })
@@ -190,7 +190,7 @@ pub struct UserRule {
 #[derive(PartialEq, PartialOrd, Clone)]
 pub struct Node {
     pub invocation: Invocation,
-    pub absolute_properties: Properties,
+    pub absolute_properties: NodeProperties,
     pub children: Option<Vec<Node>>,
 }
 
@@ -205,11 +205,7 @@ impl Node {
     }
 
     pub fn to_svg_element(&self, grammar: &Grammar) -> String {
-        let relative_properties = self
-            .invocation
-            .properties
-            .try_convert(&grammar.defs)
-            .unwrap();
+        let relative_properties = NodeProperties::from_temp(&self.invocation.properties, &grammar.defs);
 
         if self.children.is_some() && !self.children.as_ref().unwrap().is_empty() {
             let child_text = self
@@ -240,7 +236,7 @@ impl Node {
         }
     }
 
-    pub fn expand_once(&mut self, settings: ExpandSettings, grammar: &Grammar) -> ExpandStatistics {
+    pub fn expand_once(&mut self, settings: &ExpandSettings, grammar: &Grammar) -> ExpandStatistics {
         let mut stats = ExpandStatistics::default();
 
         if self.children.is_some() {

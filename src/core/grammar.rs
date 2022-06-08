@@ -18,19 +18,47 @@ pub struct Grammar {
 
 impl Grammar {
 
-    pub fn override_defs(mut self, new_defs: BTreeMap<String, f32>){
+    pub fn get_variables(&self)-> Vec<(String, Option<PropertyType>)>{
+
+        let rule_invocations = self.rules.values().flat_map(|z|z.children.iter());
+        let all_invocations = self.top_level.iter().chain(rule_invocations);
+
+        let all_properties = all_invocations.flat_map(|i|{
+            i.properties.iter()
+        });
+
+        let results = all_properties
+        .flat_map(|p|if let Value::Variable { name } = p.value.clone() {Some((name, p.key.get_type()))} else{None})
+        .sorted_by_key(|p|p.0.clone())        
+        .group_by(|p|p.0.clone())
+        .into_iter()
+        .map(|x| {
+            let n = x.1.map(|p|p.1).sorted().dedup().take(2).collect_vec();
+            if n.len() == 1{
+               (x.0,Some(n[0])) 
+            }
+            else {
+                (x.0,None) 
+            }
+
+        }).collect_vec();
+
+        results
+    }
+
+    pub fn override_defs(&mut self, new_defs: &BTreeMap<String, f32>){
 
         for (key, val) in new_defs{
-            self.defs.insert(key, val);
+            self.defs.insert(key.clone(), val.clone());
         }
     }
 
-    pub fn expand(&self, settings: ExpandSettings) -> Node {
+    pub fn expand(&self, settings: &ExpandSettings) -> Node {
         let mut current = ExpandStatistics::default();
         let nodes = self
             .top_level
             .iter()
-            .map(|i| i.to_node(&Properties::default_initial(), self))
+            .map(|i| i.to_node(&NodeProperties::default_initial(), self))
             .collect_vec();
 
         let mut root = Node {
@@ -38,7 +66,7 @@ impl Grammar {
                 method: Method::Root,
                 properties: Default::default(),
             },
-            absolute_properties: Properties::default_initial(),
+            absolute_properties: NodeProperties::default_initial(),
             children: Some(nodes),
         };
         loop {
@@ -89,7 +117,9 @@ impl ExpandSettings {
             true
         } else if node.absolute_properties.d > self.max_depth {
             true
-        } else if node.absolute_properties.p < self.min_p {
+        } else if node.absolute_properties.p * node.absolute_properties.w < self.min_p {
+            true
+        } else if node.absolute_properties.p * node.absolute_properties.l < self.min_p {
             true
         } else if node.absolute_properties.x.abs() - node.absolute_properties.p > 1.5 {
             true

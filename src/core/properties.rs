@@ -26,59 +26,7 @@ impl Value {
     }
 }
 
-#[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
-pub struct TempProperties {
-    p: Value,
-    x: Value,
-    y: Value,
-    r: Value,
-    h: Value,
-    s: Value,
-    v: Value,
-    a: Value,
-}
-
-impl TempProperties {
-    pub fn try_convert(&self, values: &BTreeMap<String, f32>) -> Result<Properties, String> {
-        let p = self.p.try_get_value(values)?;
-        let x = self.x.try_get_value(values)?;
-        let y = self.y.try_get_value(values)?;
-        let r = self.r.try_get_value(values)?;
-        let h = self.h.try_get_value(values)?;
-        let s = self.s.try_get_value(values)?;
-        let v = self.v.try_get_value(values)?;
-        let a = self.a.try_get_value(values)?;
-
-        Ok(Properties {
-            p,
-            x,
-            y,
-            r,
-            h,
-            s,
-            v,
-            a,
-            d: 1,
-        })
-    }
-}
-
-impl Default for TempProperties {
-    fn default() -> Self {
-        Self {
-            p: Value::Number { val: 1.0 },
-            x: Value::Number { val: 0.0 },
-            y: Value::Number { val: 0.0 },
-            r: Value::Number { val: 0.0 },
-            h: Value::Number { val: 0.0 },
-            s: Value::Number { val: 0.0 },
-            v: Value::Number { val: 0.0 },
-            a: Value::Number { val: 1.0 },
-        }
-    }
-}
-
-#[derive(PartialEq, PartialOrd, Clone, Copy, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Serialize, Deserialize)]
 pub enum PropertyType {
     AnyPositive,
     Any,
@@ -101,6 +49,10 @@ impl PropertyType {
 #[derive(PartialEq, PartialOrd, Clone, Copy, Serialize, Deserialize)]
 pub enum PropertyKey {
     P,
+    L,
+    W,
+
+
     X,
     Y,
     R,
@@ -111,10 +63,14 @@ pub enum PropertyKey {
     A,
 }
 
+
 impl PropertyKey {
-    pub fn set(self, properties: &mut TempProperties, value: Value) {
+    pub fn set(self, properties: &mut NodeProperties, value: f32) {
+        
         match self {
             PropertyKey::P => properties.p = value,
+            PropertyKey::L => properties.l = value,
+            PropertyKey::W => properties.w = value,
             PropertyKey::X => properties.x = value,
             PropertyKey::Y => properties.y = value,
             PropertyKey::R => properties.r = value,
@@ -128,6 +84,8 @@ impl PropertyKey {
     pub fn get_type(self)-> PropertyType{
         match self{
             PropertyKey::P => PropertyType::AnyPositive,
+            PropertyKey::L => PropertyType::AnyPositive,
+            PropertyKey::W => PropertyType::AnyPositive,
             PropertyKey::X => PropertyType::Any,
             PropertyKey::Y => PropertyType::Any,
             PropertyKey::R => PropertyType::Degrees,
@@ -145,6 +103,8 @@ impl std::str::FromStr for PropertyKey {
     fn from_str(name: &str) -> Result<Self, Self::Err> {
         match name.to_ascii_lowercase().as_str() {
             "p" => Ok(PropertyKey::P),
+            "l" => Ok(PropertyKey::L),
+            "w" => Ok(PropertyKey::W),
             "x" => Ok(PropertyKey::X),
             "y" => Ok(PropertyKey::Y),
             "r" => Ok(PropertyKey::R),
@@ -164,6 +124,9 @@ pub struct TempProperty {
 }
 
 impl TempProperty {
+
+   
+
     pub fn try_parse(property: &mut Pairs<Rule>) -> Result<Self, String> {
         let name = property.next().unwrap().as_str();
         let key = PropertyKey::from_str(name)?;
@@ -198,8 +161,10 @@ impl TempProperty {
 }
 
 #[derive(PartialEq, PartialOrd, Clone)]
-pub struct Properties {
+pub struct NodeProperties {
     pub p: f32,
+    pub l: f32,
+    pub w: f32,
     pub x: f32,
     pub y: f32,
     pub r: f32,
@@ -210,7 +175,20 @@ pub struct Properties {
     pub d: usize,
 }
 
-impl Properties {
+impl NodeProperties {
+
+    pub fn from_temp(vector: &Vec<TempProperty>, defs: &BTreeMap<String, f32>)-> Self{
+        let mut properties = Self::default_additive();
+
+        for prop in vector{
+            let value = prop.value.try_get_value(defs).unwrap();
+            prop.key.set(&mut properties, value);
+        }
+
+        properties
+    }
+
+
     ///Make absolute child properties from the child relative propeties
     pub fn make_absolute(&self, child: &Self) -> Self {
         let x2 = self.p
@@ -219,7 +197,9 @@ impl Properties {
             * ((self.r.to_radians().sin() * child.x) + (self.r.to_radians().cos() * child.y));
 
         Self {
-            p: (self.p * child.p).clamp(0.0, 1.0),
+            p: (self.p * child.p).max(0.0),
+            l: self.l * child.l.max(0.0),
+            w: self.w * child.w.max(0.0),
             x: self.x + x2,
             y: self.y + y2,
             r: (((self.r + child.r) % 360.0) + 360.0) % 360.0,
@@ -234,6 +214,8 @@ impl Properties {
     pub fn default_initial() -> Self {
         Self {
             p: 1.0,
+            l: 1.0,
+            w: 1.0,
             x: Default::default(),
             y: Default::default(),
             r: Default::default(),
@@ -248,6 +230,8 @@ impl Properties {
     pub fn default_additive() -> Self {
         Self {
             p: 1.0,
+            l: 1.0,
+            w: 1.0,
             x: Default::default(),
             y: Default::default(),
             r: Default::default(),

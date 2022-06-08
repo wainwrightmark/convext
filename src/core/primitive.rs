@@ -17,25 +17,31 @@ pub enum Primitive{
 }
 
 impl Primitive {
-    pub fn to_svg(&self, relative_properties : &Properties, absolute_properties: &Properties) -> String{
+    pub fn to_svg(&self, relative_properties : &NodeProperties, absolute_properties: &NodeProperties) -> String{
+
+        let rotate_transform = if relative_properties.r == 0.0 {"".to_string()} else{format!("style=\"transform: rotate({r}deg);\"", r= relative_properties.r)};
+
         match self {
-            Primitive::Circle => format!("<circle cx={x} cy={y} r={p} fill=\"hsl({h}, {s}%, {l}%)\" stroke=\"none\"   />", 
+            Primitive::Circle => format!("<ellipse cx={x} cy={y} rx={rx} ry={ry} fill=\"hsl({h}, {s}%, {l}%)\" stroke=\"none\"  {rotate_transform} />", 
             x= relative_properties.x,
             y =  relative_properties.y,
             //ignore rotation
-            p = relative_properties.p,
+            rx = relative_properties.p * absolute_properties.w,
+            ry = relative_properties.p * absolute_properties.l,
             h = absolute_properties.h ,
             s = absolute_properties.s * 100.0 ,
             l = absolute_properties.v  * 100.0,                
+            rotate_transform = rotate_transform
         ),
-            Primitive::Square => format!("<rect x={x} y={y} width={p} height={p} fill=\"hsl({h}, {s}%, {l}%)\" stroke=\"none\" style=\"transform: rotate({r}deg);\" />", 
+            Primitive::Square => format!("<rect x={x} y={y} width={width} height={height} fill=\"hsl({h}, {s}%, {l}%)\" stroke=\"none\" {rotate_transform} />", 
             x= relative_properties.x -( relative_properties.p) ,
-            y =  relative_properties.y -(relative_properties.p) ,
-            r = relative_properties.r,
-            p =  relative_properties.p  * 2.0,
+            y =  relative_properties.y -(relative_properties.p) ,            
+            width =  relative_properties.p *absolute_properties.w * 2.0,
+            height =  relative_properties.p *absolute_properties.l * 2.0,
             h = absolute_properties.h ,
             s = absolute_properties.s * 100.0 ,
             l = absolute_properties.v  * 100.0,                
+            rotate_transform = rotate_transform
         ),
         }
     }

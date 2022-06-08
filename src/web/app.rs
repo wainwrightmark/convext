@@ -1,9 +1,10 @@
 use std::rc::Rc;
 
 use crate::core::prelude::*;
-use crate::state::{self, prelude::*};
+use crate::state::{prelude::*, self};
 use crate::web::prelude::*;
-use web_sys::HtmlTextAreaElement;
+use itertools::Itertools;
+use web_sys::{HtmlTextAreaElement, HtmlInputElement};
 use yew::prelude::*;
 use yewdux::prelude::*;
 
@@ -14,17 +15,73 @@ pub fn app() -> Html {
         <div class="paper container margin-bottom-large" style="display: flex; flex-direction: column;">
 
             <InputBox />
+            <ErrorBox />
             <DisplayBox/>
+            <SlidersControl/>
 
         </div>
+    }
+}
+
+#[function_component(SlidersControl)]
+pub fn sliders_control() -> Html {
+    let properties = use_selector(|state: &InputState| state.grammar.get_variables());
+
+    let result = properties.iter().map(|p| {
+        let prop_key = p.0.clone();
+        let p_type = p.1;
+
+        html!(<InputSlider  {p_type} {prop_key} />)
+    });
+    html!({for result})
+}
+
+#[derive(Properties, PartialEq)]
+pub struct InputSliderProperties {
+    pub prop_key: String,
+    #[prop_or(None)]
+    pub p_type: Option<PropertyType>,
+}
+
+#[function_component(InputSlider)]
+pub fn input_slider(properties: &InputSliderProperties) -> Html {
+    let key = properties.prop_key.clone();
+
+    let value = use_selector_with_deps(|state: &InputState, k| state.get_variable_value(k), key.clone()).as_ref().clone();
+
+    if let Some(p_type) = properties.p_type {
+        let (min, max, step) = p_type.deconstruct();
+
+        let key2 = key.clone();
+
+        let onchange = Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: Event|{
+            let input : HtmlInputElement = e.target_unchecked_into();
+            let new_value = input.value();
+            let new_f_value:f32 = new_value.parse().unwrap();
+            s.set_variable_value(key2.clone(), new_f_value);
+        });
+
+        html!(
+                <div class="slider">
+
+          <input {onchange} type="range" id={key.clone()} name={key.clone()} value={format!("{}",value )} min={format!("{}",min )} max={format!("{}",max )}  step={format!("{}",step )} />
+          <label for={key.clone()}>{format!("{}: {}", key, value)}</label>
+        </div>
+            )
+    } else {
+        html!(
+                <div class="slider">
+
+          <input type="range" id={key.clone()} name={key.clone()} value={format!("{}",value )} disabled=true />
+          <label for={key.clone()}>{format!("{}: {}", key, value)}</label>
+        </div>
+            )
     }
 }
 
 #[function_component(InputBox)]
 pub fn input_box() -> Html {
     let text = Dispatch::<InputState>::new().get().text.clone();
-    //let text = use_selector(|s: &InputState| s.text.clone() ).as_ref().clone();
-
     let oninput = Dispatch::<InputState>::new().reduce_mut_callback_with(|s, e: InputEvent| {
         let input: HtmlTextAreaElement = e.target_unchecked_into();
         let value = input.value();
@@ -46,20 +103,22 @@ pub fn input_box() -> Html {
         )
 }
 
+#[function_component(ErrorBox)]
+pub fn erorr_box() -> Html {
+    let err = use_selector(|s: &InputState| s.error.clone())
+        .as_ref()
+        .clone()
+        .unwrap_or("‎".to_string());
+    html!(<code> {err} </code>)
+}
+
 #[function_component(DisplayBox)]
 pub fn diplay_box() -> Html {
     let svg = use_selector(|s: &ImageState| s.svg.clone())
         .as_ref()
         .clone();
-    let err = use_selector(|s: &ImageState| s.error.clone())
-        .as_ref()
-        .clone()
-        .unwrap_or("‎".to_string());
 
     html!(
-            <>
-            <code> {err} </code>
-            <iframe class="display-iframe" srcdoc={svg} scrolling="no"></iframe>            
-            </>
+        <iframe class="display-iframe" srcdoc={svg} scrolling="no"></iframe>
     )
 }

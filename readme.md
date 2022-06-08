@@ -29,17 +29,22 @@ end
 ```
 
 ```
-blackshape
+let blackrot 15
+let whiterot 15
+let hue 90
+
+blackshape h 80 r 15 p 0.75
+
 rul blackshape
-square v 0
-whiteshape p 0.5 x m0.5 y m0.5
-whiteshape p 0.5 x 0.5 y 0.5
+square v 0.5 h 180
+whiteshape p 0.5 x m0.5 y m0.5 r?whiterot h?hue
+whiteshape p 0.5 x 0.5 y 0.5 r?whiterot 
 end
 
 rul whiteshape
-square v 1
-blackshape p 0.5 x m0.5 y m0.5
-blackshape p 0.5 x 0.5 y 0.5
+square v 0.5
+blackshape p 0.5 x m0.5 y m0.5 r?blackrot 
+blackshape p 0.5 x 0.5 y 0.5 r?blackrot h?hue
 end
 ```
 
@@ -49,6 +54,8 @@ end
 | Name | Key | Range | Description |
 |---|---|---|---|
 Proportion|`p`|`0..`|The scale of this element. If 0.5, this element will be half the size of its parent. Elements with p 0 will be culled.|
+Length|`l`|`0..`|The scale of this element in the y axis. |
+Width|`w`|`0..`|The scale of this element in the x axis. |
 |X|`x`|`..`|If 1.0, the x coordinate of the center of this element will be on the border of its parent.|
 |Y|`y`|`..`|If 1.0, the y coordinate of the center of this element will be on the border of its parent.|
 |Rotation|`r`|`0..360`|The rotation of this element around the x axis. |

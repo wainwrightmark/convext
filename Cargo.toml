@@ -10,8 +10,8 @@ edition= "2021"
 itertools = "0.10.3"
 num = "0.4"
 serde = { version = "1.0", features = ["derive", "rc"] }
-pest = "2.0"
-pest_derive = "2.0"
+pest = "2.1"
+pest_derive = "2.1"
 yew = { git = "https://github.com/yewstack/yew.git", features = ["csr",] }
 yewdux = { git = "https://github.com/intendednull/yewdux.git" }
 
