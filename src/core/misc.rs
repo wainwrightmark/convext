@@ -31,7 +31,7 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
 
                 match statement.as_rule() {
                     Rule::invocation => {
-                        let ii = TempInvocation::parse(&mut statement.into_inner());
+                        let ii = TempInvocation::try_parse(&mut statement.into_inner())?;
                         temp_top_level.push(ii);
                     }
                     Rule::rule => {
@@ -39,16 +39,20 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
                         let rule_keyword = inner.next();
                         let name = inner.next().unwrap().as_str().to_string();
 
-                        let invocations = inner
-                            .filter_map(|p| match p.as_rule() {
-                                Rule::EOI => None,
-                                Rule::keyword_end => None,
+                        let mut invocations = Vec::<TempInvocation>::new();
+
+                        for p in inner{
+                            match p.as_rule() {
+                                Rule::EOI => (),
+                                Rule::keyword_end => (),
                                 Rule::invocation => {
-                                    Some(TempInvocation::parse(&mut p.into_inner()))
+                                    let ti = TempInvocation::try_parse(&mut p.into_inner())?;
+                                    invocations.push(ti);
                                 }
                                 _ => unreachable!(),
-                            })
-                            .collect_vec();
+                            }
+                        }
+
 
                         let inserted = 
                         temp_rules
@@ -107,25 +111,6 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
         
     }
 
-    // let mut temp_rules2: BTreeMap<String, (UserRule, Rc<UserRule>)> = Default::default();
-
-    // for key in temp_rules.keys() {
-    //     let rule = UserRule {
-    //         name: key.clone(),
-    //         children: Default::default(),
-    //     };
-    //     temp_rules2.insert(key.to_ascii_lowercase(), (rule, Rc::new(rule)));
-    // }
-
-    // let mut rules: BTreeMap<String, Rc<UserRule>> = Default::default();
-
-    // for (name, invocations) in temp_rules{
-    //     let rule = temp_rules2.get(&name.to_ascii_lowercase()).unwrap();
-    // }
-
-    // let top_level_result : Result<Vec<Invocation>, String> = temp_top_level.into_iter().map(|i| i.try_into(&rules, &defs)).collect();
-    // let top_level = top_level_result?;
-
     Ok(Grammar {
         defs,
         rules : temp_rules,
@@ -155,6 +140,78 @@ match self {
 }
 
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
+pub struct TempProperties {
+    p: TempValue,
+    x: TempValue,
+    y: TempValue,
+    r: TempValue,
+    h: TempValue,
+    s: TempValue,
+    v: TempValue,
+    a: TempValue,
+}
+
+impl TempProperties{
+
+    
+    pub fn try_convert(&self, values: &BTreeMap<String, f32>)-> Result<Properties, String>{
+
+        let p = self.p.try_get_value(values)?;
+        let x = self.x.try_get_value(values)?;
+        let y = self.y.try_get_value(values)?;
+        let r = self.r.try_get_value(values)?;
+        let h = self.h.try_get_value(values)?;
+        let s = self.s.try_get_value(values)?;
+        let v = self.v.try_get_value(values)?;
+        let a = self.a.try_get_value(values)?;
+
+
+        Ok(Properties { p, x, y, r, h, s, v, a, d: 1 })
+
+
+    }
+}
+
+impl TryFrom<Vec<TempProperty>> for TempProperties{
+    type Error = String;
+
+    fn try_from(vector: Vec<TempProperty>) -> Result<Self, Self::Error> {
+                let mut properties = TempProperties::default();
+
+        for prop in vector{
+            match prop.name.to_ascii_lowercase().as_str() {
+                "p" => properties.p = prop.val,
+                "x" => properties.x = prop.val,
+                "y" => properties.y = prop.val,
+                "r" => properties.r = prop.val,
+                "h" => properties.h = prop.val,
+                "s" => properties.s = prop.val,
+                "v" => properties.v = prop.val,
+                x=>  return Err(format!("Property '{}' not defined", x)).unwrap()
+            }
+        }
+        Ok(properties)
+    }
+
+}
+
+impl Default for TempProperties{
+    fn default() -> Self {
+        Self {
+            p: TempValue::Number { val: 1.0 },
+            x: TempValue::Number { val: 0.0 },
+            y: TempValue::Number { val: 0.0 },
+            r: TempValue::Number { val: 0.0 },
+            h: TempValue::Number { val: 0.0 },
+            s: TempValue::Number { val: 0.0 },
+            v:TempValue::Number { val: 0.0 },
+            a: TempValue::Number { val: 1.0 },
+        }
+    }
+}
+
+
+#[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct TempProperty {
     pub name: String,
     pub val: TempValue,
@@ -162,7 +219,7 @@ pub struct TempProperty {
 
 impl TempProperty {    
     pub fn parse(property: &mut Pairs<Rule>) -> Self {
-        let name = property.next().unwrap().as_str().to_string();
+        let name = property.next().unwrap().as_str().to_ascii_lowercase();
 
         let next = property.next().unwrap().into_inner().next().unwrap();
 
@@ -176,7 +233,7 @@ impl TempProperty {
                     .chars()
                     .map(|c| match c {
                         'm' => '-',
-                        'M' => '_',
+                        'M' => '-',
                         _ => c,
                     })
                     .collect();
@@ -201,24 +258,29 @@ impl TempProperty {
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct TempInvocation {
     pub rule: String,
-    pub properties: Vec<TempProperty>,
+    pub properties: TempProperties
 }
 
 impl TempInvocation {
-    pub fn parse(invocation: &mut Pairs<Rule>) -> Self {
+
+
+    
+    pub fn try_parse(invocation: &mut Pairs<Rule>) -> Result<Self, String> {
         let rule = invocation.next().unwrap().as_str().to_string();
 
-        let properties = invocation
+        let properties_vec = invocation
             .map(|p| TempProperty::parse(&mut p.into_inner()))
             .collect_vec();
 
-        Self { rule, properties }
+        let properties = properties_vec.try_into()?;
+
+        Ok( Self { rule, properties: properties })
     }
 
     pub fn to_node(&self, parent_properties: &Properties, grammar: &Grammar) -> Node {
         Node {
             invocation: self.clone(),
-            absolute_properties: parent_properties.make_absolute(&self.get_properties(grammar)),
+            absolute_properties: parent_properties.make_absolute(&self.properties.try_convert(&grammar.defs).unwrap()),
             children: None,
         }
     }
@@ -234,54 +296,8 @@ impl TempInvocation {
 
     }
 
-    fn get_properties(&self, grammar: &Grammar)-> Properties{
-        let mut properties = Properties::default_additive();
+    
 
-        for prop in self.properties.iter(){
-            let value = prop.val.try_get_value(&grammar.defs).unwrap();
-            match prop.name.to_ascii_lowercase().as_str() {
-                "p" => properties.p = value,
-                "x" => properties.x = value,
-                "y" => properties.y = value,
-                "r" => properties.r = value,
-                "h" => properties.h = value,
-                "s" => properties.s = value,
-                "l" => properties.l = value,
-                x=> ()// return Err(format!("Property '{}' not defined", x)).unwrap()
-            }
-        }
-        properties
-    }
-
-    // pub fn try_into(self, rules: &BTreeMap<String, Rc<UserRule>>, defs: &BTreeMap<String, f32>) -> Result<Invocation, String>{
-    //     let command = 
-        
-    //     match self.rule.to_ascii_lowercase().as_str() {
-    //         "circle" => Command::Circle,
-    //         "square" => Command::Square,
-    //         x=> Command::User { rule: rules.get(x).ok_or(format!("Rule '{}' not defined", self.rule))?.clone() }     
-    //     };
-
-    //     let mut properties = Properties::default();
-
-    //     for prop in self.properties{
-    //         let value = prop.val.try_get_value(defs)?;
-    //         match prop.name.to_ascii_lowercase().as_str() {
-    //             "p" => properties.p = value,
-    //             "x" => properties.x = value,
-    //             "y" => properties.y = value,
-    //             "r" => properties.r = value,
-    //             "h" => properties.h = value,
-    //             "s" => properties.s = value,
-    //             "l" => properties.l = value,
-    //             x=> return Err(format!("Property '{}' not defined", x))
-    //         }
-    //     }
-
-    //     Ok(Invocation{command, properties})
-
-
-    // }   
 }
 
 #[derive(PartialEq, Clone, Serialize, Deserialize, Default)]
@@ -370,7 +386,7 @@ impl Node {
     }
 
     pub fn to_svg_element(&self, grammar: &Grammar) -> String {
-        let relative_properties = self.invocation.get_properties(grammar);
+        let relative_properties = self.invocation.properties.try_convert(&grammar.defs).unwrap();
 
         if self.children.is_some() && !self.children.as_ref().unwrap().is_empty()    {
             let child_text = self.children.as_ref().unwrap().iter().map(|c| c.to_svg_element(grammar)).join("\r\n");
@@ -399,7 +415,7 @@ impl Node {
                     p = relative_properties.p,
                     h = self.absolute_properties.h ,
                     s = self.absolute_properties.s * 100.0 ,
-                    l = self.absolute_properties.l  * 100.0,                
+                    l = self.absolute_properties.v  * 100.0,                
                 )
                 },
                 "square"=>{
@@ -410,7 +426,7 @@ impl Node {
                     p =  relative_properties.p  * 2.0,
                     h = self.absolute_properties.h ,
                     s = self.absolute_properties.s * 100.0 ,
-                    l = self.absolute_properties.l  * 100.0,                
+                    l = self.absolute_properties.v  * 100.0,                
                 )
                 }
                 _=> "".to_string()
@@ -530,7 +546,7 @@ pub struct Properties {
     r: f32,
     h: f32,
     s: f32,
-    l: f32,
+    v: f32,
     a: f32,
     d: usize,
 }
@@ -550,7 +566,7 @@ impl Properties {
             r: (((self.r + child.r) % 360.0) + 360.0) % 360.0,
             h: (((self.h + child.h) % 360.0) + 360.0) % 360.0,
             s: (self.s + child.s).clamp(0.0, 1.0),
-            l: (self.l + child.l).clamp(0.0, 1.0),
+            v: (self.v + child.v).clamp(0.0, 1.0),
             a: (self.a * child.a).clamp(0.0, 1.0),
             d: self.d + child.d,
         }
@@ -564,7 +580,7 @@ impl Properties {
             r: Default::default(),
             h: Default::default(),
             s: 1.0,
-            l: 0.0,
+            v: 0.0,
             a: 1.0,
             d: Default::default(),
         }
@@ -578,7 +594,7 @@ impl Properties {
             r: Default::default(),
             h: Default::default(),
             s: 0.0,
-            l: 0.0,
+            v: 0.0,
             a: 1.0,
             d: 1,
         }

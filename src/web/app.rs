@@ -37,7 +37,7 @@ pub fn input_box() -> Html {
 <p>
 
 </p>
-
+//https://css-tricks.com/creating-an-editable-textarea-that-supports-syntax-highlighted-code/
         <textarea id="input-textarea" name="input-textarea" class="input-textarea" rows="10" {oninput} 
         value={text}
         spellcheck="false"
