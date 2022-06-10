@@ -4,7 +4,7 @@ use crate::core::prelude::*;
 use crate::state::{self, prelude::*};
 use crate::web::prelude::*;
 use itertools::Itertools;
-use web_sys::{HtmlInputElement, HtmlTextAreaElement, HtmlSelectElement};
+use web_sys::{HtmlInputElement, HtmlSelectElement, HtmlTextAreaElement};
 use yew::prelude::*;
 use yewdux::prelude::*;
 
@@ -35,15 +35,17 @@ pub fn app() -> Html {
 }
 
 #[function_component(ExamplesSelect)]
-pub fn examples_select()-> Html{
+pub fn examples_select() -> Html {
     let oninput = Dispatch::<InputState>::new().reduce_mut_callback_with(|s, e: InputEvent| {
-        let input: HtmlSelectElement  = e.target_unchecked_into();
+        let input: HtmlSelectElement = e.target_unchecked_into();
         let value = input.value();
-        s.use_creation(value);        
+        s.use_creation(value);
     });
 
     let creations = use_store_value::<SavedCreationsState>();
-    let chosen = use_selector(|state: &InputState| state.name.clone()).as_ref().clone();
+    let chosen = use_selector(|state: &InputState| state.name.clone())
+        .as_ref()
+        .clone();
 
     let options = creations.creations.values().map(|e| {
         let selected = e.name == chosen;
@@ -51,18 +53,16 @@ pub fn examples_select()-> Html{
     });
 
     html!(
-<select {oninput}>
-{for options}
-</select>
+    <select {oninput}>
+    {for options}
+    </select>
 
-    )
+        )
 }
 
 #[function_component(SettingsControl)]
 pub fn settings_control() -> Html {
-    let settings = use_selector(|state: &InputState| state.settings)
-        .as_ref()
-        .clone();
+    let settings = *use_selector(|state: &InputState| state.settings).as_ref();
 
     let on_max_nodes_input =
         Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: InputEvent| {
@@ -75,8 +75,8 @@ pub fn settings_control() -> Html {
             };
             s.update_settings(new_settings);
         });
-        
-        let on_max_depth_input =
+
+    let on_max_depth_input =
         Dispatch::<InputState>::new().reduce_mut_callback_with(move |s, e: InputEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
             let new_value = input.value();
@@ -129,12 +129,11 @@ pub struct InputSliderProperties {
 pub fn input_slider(properties: &InputSliderProperties) -> Html {
     let key = properties.prop_key.clone();
 
-    let value = use_selector_with_deps(
+    let value = *use_selector_with_deps(
         |state: &InputState, k| state.get_variable_value(k),
         key.clone(),
     )
-    .as_ref()
-    .clone();
+    .as_ref();
 
     if let Some(p_type) = properties.p_type {
         let (min, max, step) = p_type.deconstruct();
@@ -180,8 +179,10 @@ pub fn input_slider(properties: &InputSliderProperties) -> Html {
 }
 
 #[function_component(NameBox)]
-pub fn name_box() -> Html{
-    let name = use_selector(|state: &InputState| state.name.clone()).as_ref().clone();
+pub fn name_box() -> Html {
+    let name = use_selector(|state: &InputState| state.name.clone())
+        .as_ref()
+        .clone();
     let oninput = Dispatch::<InputState>::new().reduce_mut_callback_with(|s, e: InputEvent| {
         let input: HtmlInputElement = e.target_unchecked_into();
         let value = input.value();
@@ -190,19 +191,20 @@ pub fn name_box() -> Html{
 
     let onclick = Dispatch::<InputState>::new().reduce_mut_callback(|s| s.save());
 
-    html!{
+    html! {
         <div style="display: flex;">
         <input {oninput}   value={name}   style="width: 100px;"         />
         <button {onclick}> {"Save"} </button>
         <ExamplesSelect/>
         </div>
     }
-
 }
 
 #[function_component(InputBox)]
 pub fn input_box() -> Html {
-    let text = use_selector(|state: &InputState| state.text.clone()).as_ref().clone();
+    let text = use_selector(|state: &InputState| state.text.clone())
+        .as_ref()
+        .clone();
     let oninput = Dispatch::<InputState>::new().reduce_mut_callback_with(|s, e: InputEvent| {
         let input: HtmlTextAreaElement = e.target_unchecked_into();
         let value = input.value();

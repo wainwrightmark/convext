@@ -8,27 +8,27 @@ use std::default;
 use std::rc::Rc;
 use yewdux::prelude::*;
 
-
 #[derive(PartialEq, Store, Clone, Serialize, Deserialize)]
 #[store(storage = "local")] // can also be "session"
-pub struct SavedCreationsState{
-    pub creations: BTreeMap<String, Creation>
+pub struct SavedCreationsState {
+    pub creations: BTreeMap<String, Creation>,
 }
 
-impl Default for SavedCreationsState{
+impl Default for SavedCreationsState {
     fn default() -> Self {
-
         let mut creations = BTreeMap::new();
 
-        for e in EXAMPLES{
-            let creation = Creation{name: e.0.to_string(), text: e.1.to_string()};
+        for e in EXAMPLES {
+            let creation = Creation {
+                name: e.0.to_string(),
+                text: e.1.to_string(),
+            };
             creations.insert(creation.name.clone(), creation);
         }
 
-        Self { creations: creations }
+        Self { creations }
     }
 }
-
 
 #[derive(PartialEq, Store, Clone, Serialize, Deserialize)]
 #[store(storage = "local")] // can also be "session"
@@ -58,16 +58,23 @@ impl Default for InputState {
 }
 
 impl InputState {
-
-    pub fn save(&self){
-        Dispatch::<SavedCreationsState>::new().reduce_mut(|s| s.creations.insert(self.name.clone(), Creation { name: self.name.clone(), text: self.text.clone() }));
+    pub fn save(&self) {
+        Dispatch::<SavedCreationsState>::new().reduce_mut(|s| {
+            s.creations.insert(
+                self.name.clone(),
+                Creation {
+                    name: self.name.clone(),
+                    text: self.text.clone(),
+                },
+            )
+        });
     }
 
     pub fn get_variable_value(&self, key: &String) -> f32 {
         if let (Some(v)) = self.overrides.get(key) {
-            v.clone()
+            *v
         } else if let Some(v) = self.grammar.defs.get(key) {
-            v.clone()
+            *v
         } else {
             0.0
         }
@@ -75,7 +82,7 @@ impl InputState {
 
     pub fn set_variable_value(&mut self, key: String, value: f32) {
         self.overrides.insert(key, value);
-        Dispatch::<ImageState>::new().reduce_mut(|state: &mut ImageState| state.update_svg(&self));
+        Dispatch::<ImageState>::new().reduce_mut(|state: &mut ImageState| state.update_svg(self));
     }
 
     pub fn update_settings(&mut self, settings: ExpandSettings) {
@@ -83,14 +90,14 @@ impl InputState {
         let svg = node.to_svg(&self.grammar);
 
         self.settings = settings;
-        Dispatch::<ImageState>::new().reduce_mut(|state: &mut ImageState| state.update_svg(&self));
+        Dispatch::<ImageState>::new().reduce_mut(|state: &mut ImageState| state.update_svg(self));
     }
 
-    pub fn use_creation(&mut self, name: String){
+    pub fn use_creation(&mut self, name: String) {
         let saved = Dispatch::<SavedCreationsState>::new().get();
         let s = saved.creations.get(&name);
 
-        if let Some(creation) = s{
+        if let Some(creation) = s {
             self.name = creation.name.clone();
             self.update_text(creation.text.clone());
         }
@@ -107,7 +114,7 @@ impl InputState {
                     if self.grammar != grammar {
                         self.grammar = grammar;
                         Dispatch::<ImageState>::new()
-                            .reduce_mut(|state: &mut ImageState| state.update_svg(&self));
+                            .reduce_mut(|state: &mut ImageState| state.update_svg(self));
                     }
                 }
                 Err(error) => self.error = Some(error),

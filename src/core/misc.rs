@@ -95,18 +95,29 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
         }
     }
 
-    for rule_name in temp_top_level.iter().filter_map(|i|if let Method::Rule(r) = i.method.clone() {Some(r)} else{None} ) {        if !temp_rules.contains_key(&rule_name)            
-        {
+    for rule_name in temp_top_level.iter().filter_map(|i| {
+        if let Method::Rule(r) = i.method.clone() {
+            Some(r)
+        } else {
+            None
+        }
+    }) {
+        if !temp_rules.contains_key(&rule_name) {
             return Err(format!("Rule '{}' does not exist", rule_name));
         }
     }
 
     for (_, rule) in temp_rules.iter() {
-        for rule_name in rule.children.iter().filter_map(|i|if let Method::Rule(r) = i.method.clone() {Some(r)} else{None} ) {
-            if !temp_rules.contains_key(&rule_name)            
-        {
-            return Err(format!("Rule '{}' does not exist", rule_name));
-        }
+        for rule_name in rule.children.iter().filter_map(|i| {
+            if let Method::Rule(r) = i.method.clone() {
+                Some(r)
+            } else {
+                None
+            }
+        }) {
+            if !temp_rules.contains_key(&rule_name) {
+                return Err(format!("Rule '{}' does not exist", rule_name));
+            }
         }
     }
 
@@ -117,18 +128,12 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
     })
 }
 
-
-
-
-
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
-pub enum Method{
+pub enum Method {
     Root,
     Primitive(Primitive),
-    Rule(String)
-
+    Rule(String),
 }
-
 
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct Invocation {
@@ -137,19 +142,22 @@ pub struct Invocation {
 }
 
 impl Invocation {
-    pub fn get_children(&self, absolute_properties: &NodeProperties, grammar: &Grammar) -> Vec<Node> {
-
+    pub fn get_children(
+        &self,
+        absolute_properties: &NodeProperties,
+        grammar: &Grammar,
+    ) -> Vec<Node> {
         match self.method.clone() {
             Method::Primitive(_) => Default::default(),
-            Method::Root => unreachable!(), 
-            Method::Rule(r) => grammar.rules
-            .get(&r)
-            .unwrap()
-            .children
-            .iter()
-            .map(|c| c.to_node(absolute_properties, grammar))
-            .collect_vec(),
-        
+            Method::Root => unreachable!(),
+            Method::Rule(r) => grammar
+                .rules
+                .get(&r)
+                .unwrap()
+                .children
+                .iter()
+                .map(|c| c.to_node(absolute_properties, grammar))
+                .collect_vec(),
         }
     }
 
@@ -157,7 +165,7 @@ impl Invocation {
         Node {
             invocation: self.clone(),
             absolute_properties: parent_properties
-                .make_absolute(&NodeProperties::from_temp(&self.properties, &grammar. defs)),
+                .make_absolute(&NodeProperties::from_temp(&self.properties, &grammar.defs)),
             children: None,
         }
     }
@@ -165,11 +173,14 @@ impl Invocation {
     pub fn try_parse(invocation: &mut Pairs<Rule>) -> Result<Self, String> {
         let method_name = invocation.next().unwrap().as_str().to_ascii_lowercase();
 
-        let method = Primitive::from_str(&method_name).ok().map(|p|Method::Primitive(p)) .unwrap_or(Method::Rule(method_name));
+        let method = Primitive::from_str(&method_name)
+            .ok()
+            .map(Method::Primitive)
+            .unwrap_or(Method::Rule(method_name));
 
         let mut properties = Vec::<TempProperty>::new();
 
-        for pair in invocation{
+        for pair in invocation {
             let mut inner = pair.into_inner();
             let prop = TempProperty::try_parse(&mut inner)?;
             properties.push(prop);
@@ -179,14 +190,11 @@ impl Invocation {
     }
 }
 
-
-
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct UserRule {
     pub name: String,
     pub children: Vec<Invocation>,
 }
-
 
 #[derive(PartialEq, PartialOrd, Clone)]
 pub struct Node {
@@ -205,27 +213,27 @@ impl Node {
         )
     }
 
-    fn get_style(rp: &NodeProperties)-> String{
+    fn get_style(rp: &NodeProperties) -> String {
         let mut transform = "".to_string();
-        if rp.x != 0.0 || rp.y != 0.0{
-            transform = format!("{} translate({x}px, {y}px) ",transform, x= rp.x,y= rp.y);
+        if rp.x != 0.0 || rp.y != 0.0 {
+            transform = format!("{} translate({x}px, {y}px) ", transform, x = rp.x, y = rp.y);
         }
-        if rp.p != 1.0{
-            transform = format!("{} scale({p}%) ",transform, p= rp.p * 100.0);
+        if rp.p != 1.0 {
+            transform = format!("{} scale({p}%) ", transform, p = rp.p * 100.0);
         }
-        if(rp.r != 0.0){
-            transform =  format!("{} rotate({r}deg)",transform, r= rp.r);
+        if (rp.r != 0.0) {
+            transform = format!("{} rotate({r}deg)", transform, r = rp.r);
         }
-        if transform != ""{
-            format!("style=\"transform: {};\"", transform)            
-        }
-        else {
+        if !transform.is_empty() {
+            format!("style=\"transform: {};\"", transform)
+        } else {
             "".to_string()
         }
     }
 
     pub fn to_svg_element(&self, grammar: &Grammar) -> String {
-        let relative_properties = NodeProperties::from_temp(&self.invocation.properties, &grammar.defs);
+        let relative_properties =
+            NodeProperties::from_temp(&self.invocation.properties, &grammar.defs);
 
         if self.children.is_some() && !self.children.as_ref().unwrap().is_empty() {
             let child_text = self
@@ -238,16 +246,14 @@ impl Node {
 
             let style = Self::get_style(&relative_properties);
 
-            format!("<g {style}>\r\n {child_text}\r\n </g>",
-
-                    //no color
-                style=style,
-            
-            child_text = child_text)
+            format!(
+                "<g {style}>\r\n {child_text}\r\n </g>",
+                //no color
+                style = style,
+                child_text = child_text
+            )
         } else {
-            
-
-            match self.invocation.method{
+            match self.invocation.method {
                 Method::Root => "".to_string(),
                 Method::Primitive(p) => p.to_svg(&relative_properties, &self.absolute_properties),
                 Method::Rule(_) => "".to_string(),
@@ -255,7 +261,11 @@ impl Node {
         }
     }
 
-    pub fn expand_once(&mut self, settings: &ExpandSettings, grammar: &Grammar) -> ExpandStatistics {
+    pub fn expand_once(
+        &mut self,
+        settings: &ExpandSettings,
+        grammar: &Grammar,
+    ) -> ExpandStatistics {
         let mut stats = ExpandStatistics::default();
 
         if self.children.is_some() {
@@ -285,7 +295,3 @@ impl Node {
         stats
     }
 }
-
-
-
-

@@ -1,32 +1,24 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Creation{
-
+pub struct Creation {
     pub name: String,
-    pub  text: String
+    pub text: String,
 }
 
-pub const EXAMPLES: [(&'static str, &'static str); 4] = 
-
-[
-(
-    "New",
-    
-    "circle v0.5",
-),
-
-(
-    
-    
-    "Circles", 
-"myshape
+pub const EXAMPLES: [(&str, &str); 4] = [
+    ("New", "circle v0.5"),
+    (
+        "Circles",
+        "myshape
 rul myshape
 circle v 0.5
 myshape p 0.75 h 40
-end"),
-("Face", 
-"ear x0.7
+end",
+    ),
+    (
+        "Face",
+        "ear x0.7
 ear xm0.7
 pentagon r180 v0.8  w0.9
 eye p 0.2 xm0.3ym0.3
@@ -63,15 +55,16 @@ square p0.05 w4.0 v0.2
 rul eye
 square ym1 l0.25
 circle w 0.5 l 0.9 v 0.9 r  90
-circle w 0.5 l 0.9 p 0.5 v 0.8 h 235"
-),
-
-("Pascal", "let hue 40
+circle w 0.5 l 0.9 p 0.5 v 0.8 h 235",
+    ),
+    (
+        "Pascal",
+        "let hue 40
 pascal
 rul pascal
 triangle v0.5
 pascal h ?hue p 0.5 ym0.5
 pascal h ?hue p 0.5 y0.25 x0.5
-pascal h ?hue p 0.5 y0.25 xm0.5")
-
+pascal h ?hue p 0.5 y0.25 xm0.5",
+    ),
 ];

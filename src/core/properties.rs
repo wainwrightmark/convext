@@ -63,10 +63,8 @@ pub enum PropertyKey {
     A,
 }
 
-
 impl PropertyKey {
     pub fn set(self, properties: &mut NodeProperties, value: f32) {
-        
         match self {
             PropertyKey::P => properties.p = value,
             PropertyKey::L => properties.l = value,
@@ -82,8 +80,8 @@ impl PropertyKey {
         }
     }
 
-    pub fn get_type(self)-> PropertyType{
-        match self{
+    pub fn get_type(self) -> PropertyType {
+        match self {
             PropertyKey::P => PropertyType::AnyPositive,
             PropertyKey::L => PropertyType::AnyPositive,
             PropertyKey::W => PropertyType::AnyPositive,
@@ -127,9 +125,6 @@ pub struct TempProperty {
 }
 
 impl TempProperty {
-
-   
-
     pub fn try_parse(property: &mut Pairs<Rule>) -> Result<Self, String> {
         let name = property.next().unwrap().as_str();
         let key = PropertyKey::from_str(name)?;
@@ -180,18 +175,16 @@ pub struct NodeProperties {
 }
 
 impl NodeProperties {
-
-    pub fn from_temp(vector: &Vec<TempProperty>, defs: &BTreeMap<String, f32>)-> Self{
+    pub fn from_temp(vector: &Vec<TempProperty>, defs: &BTreeMap<String, f32>) -> Self {
         let mut properties = Self::default_additive();
 
-        for prop in vector{
+        for prop in vector {
             let value = prop.value.try_get_value(defs).unwrap();
             prop.key.set(&mut properties, value);
         }
 
         properties
     }
-
 
     ///Make absolute child properties from the child relative propeties
     pub fn make_absolute(&self, child: &Self) -> Self {

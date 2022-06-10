@@ -8,20 +8,19 @@ use std::default;
 use std::rc::Rc;
 use yewdux::prelude::*;
 
-
 #[derive(PartialEq, Store, Clone, Serialize, Deserialize)]
-pub struct ImageState {    
-    pub svg: String,    
+pub struct ImageState {
+    pub svg: String,
 }
 
-impl Default for ImageState{
+impl Default for ImageState {
     fn default() -> Self {
         let v = Dispatch::<InputState>::new().get();
 
         let mut s = Self {
-             svg: Default::default(),};
+            svg: Default::default(),
+        };
 
-                
         s.update_svg(v.as_ref());
 
         s
@@ -29,18 +28,11 @@ impl Default for ImageState{
 }
 
 impl ImageState {
-
-    pub fn update_svg(&mut self, input: &InputState){
+    pub fn update_svg(&mut self, input: &InputState) {
         let mut override_grammar = input.grammar.clone();
         override_grammar.override_defs(&input.overrides);
         let node = override_grammar.expand(&input.settings);
         let svg = node.to_svg(&override_grammar);
         self.svg = svg;
     }
-
-   
-
-    
-
-    
 }
