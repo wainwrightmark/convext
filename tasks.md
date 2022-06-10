@@ -5,6 +5,7 @@
 - [ ] Allow probabilities for rules 
 - [ ] Add ranges for animation. Also compound ranges, time `t` property
 - [x] More primitives `tri` `rtri` `pent` `hex`
+- [ ] `c` for polygons
 - [ ] Support math operators `min` `add` `mul` `div` `abs`
 - [ ] Support comparison operators `eq` `neq` `lt` `gt` `leq` `geq`
 - [ ] Support logic operators `and` `or` `xor` `not`
@@ -22,5 +23,8 @@
 - [ ] Duplicate Line
 
 - [x] Settings Panel
+- [ ] Examples select
+- [ ] Save Creations
+- [ ] Show preview behind code window
 - [ ] Export SVG
 - [ ] Css Classes

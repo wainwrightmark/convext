@@ -38,9 +38,10 @@ impl Primitive {
     pub fn to_svg(&self, relative_properties : &NodeProperties, absolute_properties: &NodeProperties) -> String{
 
         let rotate_transform = if relative_properties.r == 0.0 {"".to_string()} else{format!("style=\"transform: rotate({r}deg);\"", r= relative_properties.r)};
-        let color = format!("fill=\"hsl({h}, {s}%, {l}%)\" stroke=\"none\"",  h = absolute_properties.h ,
+        let color = format!("fill=\"hsl({h}, {s}%, {l}%, {a}%)\" stroke=\"none\"",  h = absolute_properties.h ,
         s = absolute_properties.s * 100.0 ,
-        l = absolute_properties.v  * 100.0,      );
+        l = absolute_properties.v  * 100.0,     
+        a = absolute_properties.a  * 100.0,      );
 
         match self {
             Primitive::Circle => format!("<ellipse cx={x} cy={y} rx={rx} ry={ry} {color} {rotate_transform} />", 
