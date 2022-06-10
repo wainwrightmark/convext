@@ -19,9 +19,9 @@ pub fn app() -> Html {
             <ErrorBox />
             <details>
             <summary>{"Code"}</summary>
+            <NameBox />
             <InputBox />
             </details>
-            <ExamplesSelect />
             <details>
             <summary>{"Variables"}</summary>
             <SlidersControl/>
@@ -39,12 +39,15 @@ pub fn examples_select()-> Html{
     let oninput = Dispatch::<InputState>::new().reduce_mut_callback_with(|s, e: InputEvent| {
         let input: HtmlSelectElement  = e.target_unchecked_into();
         let value = input.value();
-        s.update_text(value);
+        s.use_creation(value);        
     });
 
-    let options = EXAMPLES.iter().map(|e| {
+    let creations = use_store_value::<SavedCreationsState>();
+    let chosen = use_selector(|state: &InputState| state.name.clone()).as_ref().clone();
 
-        html!(<option value={e.text}>{e.name} </option>)
+    let options = creations.creations.values().map(|e| {
+        let selected = e.name == chosen;
+        html!(<option {selected} value={e.name.clone()}>{e.name.clone()} </option>)
     });
 
     html!(
@@ -174,6 +177,27 @@ pub fn input_slider(properties: &InputSliderProperties) -> Html {
         </div>
             )
     }
+}
+
+#[function_component(NameBox)]
+pub fn name_box() -> Html{
+    let name = use_selector(|state: &InputState| state.name.clone()).as_ref().clone();
+    let oninput = Dispatch::<InputState>::new().reduce_mut_callback_with(|s, e: InputEvent| {
+        let input: HtmlInputElement = e.target_unchecked_into();
+        let value = input.value();
+        s.name = value;
+    });
+
+    let onclick = Dispatch::<InputState>::new().reduce_mut_callback(|s| s.save());
+
+    html!{
+        <div style="display: flex;">
+        <input {oninput}   value={name}   style="width: 100px;"         />
+        <button {onclick}> {"Save"} </button>
+        <ExamplesSelect/>
+        </div>
+    }
+
 }
 
 #[function_component(InputBox)]

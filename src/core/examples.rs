@@ -1,27 +1,31 @@
-pub struct Example{
-    pub name: &'static str,
-    pub text: &'static str
+use serde::{Serialize, Deserialize};
+
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Creation{
+
+    pub name: String,
+    pub  text: String
 }
 
-pub const EXAMPLES: [Example; 4] = 
+pub const EXAMPLES: [(&'static str, &'static str); 4] = 
 
 [
-Example{
-    name: "New",
-    text:
+(
+    "New",
+    
     "circle v0.5",
-},
+),
 
-Example{
+(
     
     
-    name: "Circles", text:
+    "Circles", 
 "myshape
 rul myshape
 circle v 0.5
 myshape p 0.75 h 40
-end"},
-Example{name: "Face", text:
+end"),
+("Face", 
 "ear x0.7
 ear xm0.7
 pentagon r180 v0.8  w0.9
@@ -60,14 +64,14 @@ rul eye
 square ym1 l0.25
 circle w 0.5 l 0.9 v 0.9 r  90
 circle w 0.5 l 0.9 p 0.5 v 0.8 h 235"
-},
+),
 
-Example{name: "Pascal", text:"let hue 40
+("Pascal", "let hue 40
 pascal
 rul pascal
 triangle v0.5
 pascal h ?hue p 0.5 ym0.5
 pascal h ?hue p 0.5 y0.25 x0.5
-pascal h ?hue p 0.5 y0.25 xm0.5"},
+pascal h ?hue p 0.5 y0.25 xm0.5")
 
 ];

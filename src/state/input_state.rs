@@ -8,9 +8,32 @@ use std::default;
 use std::rc::Rc;
 use yewdux::prelude::*;
 
+
+#[derive(PartialEq, Store, Clone, Serialize, Deserialize)]
+#[store(storage = "local")] // can also be "session"
+pub struct SavedCreationsState{
+    pub creations: BTreeMap<String, Creation>
+}
+
+impl Default for SavedCreationsState{
+    fn default() -> Self {
+
+        let mut creations = BTreeMap::new();
+
+        for e in EXAMPLES{
+            let creation = Creation{name: e.0.to_string(), text: e.1.to_string()};
+            creations.insert(creation.name.clone(), creation);
+        }
+
+        Self { creations: creations }
+    }
+}
+
+
 #[derive(PartialEq, Store, Clone, Serialize, Deserialize)]
 #[store(storage = "local")] // can also be "session"
 pub struct InputState {
+    pub name: String,
     pub text: String,
     pub grammar: Grammar,
     pub overrides: BTreeMap<String, f32>,
@@ -20,11 +43,12 @@ pub struct InputState {
 
 impl Default for InputState {
     fn default() -> Self {
-        let text = "circle v 0.5\r\ncircle p 0.5 v 0.5 h 120";
-        let grammar = parse(text).unwrap();
+        let example = EXAMPLES[0];
+        let grammar = parse(example.0).unwrap();
 
         Self {
-            text: text.to_string(),
+            name: example.0.to_string(),
+            text: example.1.to_string(),
             grammar,
             overrides: Default::default(),
             settings: Default::default(),
@@ -34,6 +58,11 @@ impl Default for InputState {
 }
 
 impl InputState {
+
+    pub fn save(&self){
+        Dispatch::<SavedCreationsState>::new().reduce_mut(|s| s.creations.insert(self.name.clone(), Creation { name: self.name.clone(), text: self.text.clone() }));
+    }
+
     pub fn get_variable_value(&self, key: &String) -> f32 {
         if let (Some(v)) = self.overrides.get(key) {
             v.clone()
@@ -55,6 +84,16 @@ impl InputState {
 
         self.settings = settings;
         Dispatch::<ImageState>::new().reduce_mut(|state: &mut ImageState| state.update_svg(&self));
+    }
+
+    pub fn use_creation(&mut self, name: String){
+        let saved = Dispatch::<SavedCreationsState>::new().get();
+        let s = saved.creations.get(&name);
+
+        if let Some(creation) = s{
+            self.name = creation.name.clone();
+            self.update_text(creation.text.clone());
+        }
     }
 
     pub fn update_text(&mut self, new_text: String) {

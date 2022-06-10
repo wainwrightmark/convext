@@ -23,8 +23,8 @@
 - [ ] Duplicate Line
 
 - [x] Settings Panel
-- [ ] Examples select
-- [ ] Save Creations
+- [x] Examples select
+- [x] Save Creations
 - [ ] Show preview behind code window
 - [ ] Export SVG
 - [ ] Css Classes
