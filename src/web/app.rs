@@ -4,7 +4,7 @@ use crate::core::prelude::*;
 use crate::state::{self, prelude::*};
 use crate::web::prelude::*;
 use itertools::Itertools;
-use web_sys::{HtmlInputElement, HtmlTextAreaElement};
+use web_sys::{HtmlInputElement, HtmlTextAreaElement, HtmlSelectElement};
 use yew::prelude::*;
 use yewdux::prelude::*;
 
@@ -21,7 +21,7 @@ pub fn app() -> Html {
             <summary>{"Code"}</summary>
             <InputBox />
             </details>
-
+            <ExamplesSelect />
             <details>
             <summary>{"Variables"}</summary>
             <SlidersControl/>
@@ -32,6 +32,27 @@ pub fn app() -> Html {
 
         </div>
     }
+}
+
+#[function_component(ExamplesSelect)]
+pub fn examples_select()-> Html{
+    let oninput = Dispatch::<InputState>::new().reduce_mut_callback_with(|s, e: InputEvent| {
+        let input: HtmlSelectElement  = e.target_unchecked_into();
+        let value = input.value();
+        s.update_text(value);
+    });
+
+    let options = EXAMPLES.iter().map(|e| {
+
+        html!(<option value={e.text}>{e.name} </option>)
+    });
+
+    html!(
+<select {oninput}>
+{for options}
+</select>
+
+    )
 }
 
 #[function_component(SettingsControl)]
@@ -157,7 +178,7 @@ pub fn input_slider(properties: &InputSliderProperties) -> Html {
 
 #[function_component(InputBox)]
 pub fn input_box() -> Html {
-    let text = Dispatch::<InputState>::new().get().text.clone();
+    let text = use_selector(|state: &InputState| state.text.clone()).as_ref().clone();
     let oninput = Dispatch::<InputState>::new().reduce_mut_callback_with(|s, e: InputEvent| {
         let input: HtmlTextAreaElement = e.target_unchecked_into();
         let value = input.value();
