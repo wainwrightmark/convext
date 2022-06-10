@@ -1,6 +1,7 @@
 use convext::core::prelude::*;
 
 use ntest::test_case;
+use rand::SeedableRng;
 // use rand::{prelude::StdRng, Rng};
 
 pub const EXAMPLES: [&str; 6] = [
@@ -39,7 +40,9 @@ fn test_svg(index: usize) {
     let input = EXAMPLES[index];
     let grammar = parse(input).unwrap();
 
-    let node = grammar.expand(&ExpandSettings::default());
+    let mut rng = SeedableRng::seed_from_u64(100);
+
+    let node = grammar.expand(&ExpandSettings::default(),&mut rng);
 
     let svg = node.to_svg(&grammar);
 

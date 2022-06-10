@@ -6,6 +6,7 @@ use num::traits::ops::inv;
 use pest::iterators::Pairs;
 use pest::Parser;
 use pest_derive::Parser;
+use rand::prelude::StdRng;
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Clone, Serialize, Deserialize, Default)]
@@ -17,8 +18,8 @@ pub struct Grammar {
 
 impl Grammar {
     pub fn get_variables(&self) -> Vec<(String, Option<PropertyType>)> {
-        let rule_invocations = self.rules.values().flat_map(|z| z.children.iter());
-        let all_invocations = self.top_level.iter().chain(rule_invocations);
+        let rule_invocations = self.rules.values().flat_map(|z| z.cases.iter().flat_map(|c|c.invocations.iter()));                
+        let all_invocations = self.top_level.iter().chain (rule_invocations);
 
         let all_properties = all_invocations.flat_map(|i| i.properties.iter());
 
@@ -50,7 +51,7 @@ impl Grammar {
         }
     }
 
-    pub fn expand(&self, settings: &ExpandSettings) -> Node {
+    pub fn expand(&self, settings: &ExpandSettings, rng:&mut StdRng,) -> Node {
         let mut current = ExpandStatistics::default();
         let nodes = self
             .top_level
@@ -67,7 +68,7 @@ impl Grammar {
             children: Some(nodes),
         };
         loop {
-            let changes = root.expand_once(settings, self);
+            let changes = root.expand_once(settings, self, rng);
 
             current = current + &changes;
             if changes.new_nodes == 0 {
@@ -131,8 +132,8 @@ impl Default for ExpandSettings {
         Self {
             max_nodes: 1000,
             max_depth: 20,
-            min_a: 0.01,
-            min_p: 0.01,
+            min_a: 0.001,
+            min_p: 0.001,
         }
     }
 }

@@ -6,7 +6,7 @@ pub struct Creation {
     pub text: String,
 }
 
-pub const EXAMPLES: [(&str, &str); 4] = [
+pub const EXAMPLES: [(&str, &str); 5] = [
     ("New", "circle v0.5"),
     (
         "Circles",
@@ -67,4 +67,22 @@ pascal h ?hue p 0.5 ym0.5
 pascal h ?hue p 0.5 y0.25 x0.5
 pascal h ?hue p 0.5 y0.25 xm0.5",
     ),
+    ("Tree",
+
+"line y0.9 p0.01 v0.5 h120 a 0.5
+
+let probr 0.1
+let probl 0.1
+
+rul line
+square  l 4
+line ym8 p0.99
+
+rul line ?probr
+line ym4 r15
+
+rul line ?probl
+line ym4 rm15
+"
+)
 ];

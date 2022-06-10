@@ -39,12 +39,13 @@ pub struct InputState {
     pub overrides: BTreeMap<String, f32>,
     pub settings: ExpandSettings,
     pub error: Option<String>,
+    pub seed: u64,
 }
 
 impl Default for InputState {
     fn default() -> Self {
         let example = EXAMPLES[0];
-        let grammar = parse(example.0).unwrap();
+        let grammar = parse(example.1).unwrap();
 
         Self {
             name: example.0.to_string(),
@@ -53,6 +54,7 @@ impl Default for InputState {
             overrides: Default::default(),
             settings: Default::default(),
             error: Default::default(),
+            seed: 100
         }
     }
 }
@@ -86,9 +88,6 @@ impl InputState {
     }
 
     pub fn update_settings(&mut self, settings: ExpandSettings) {
-        let node = self.grammar.expand(&settings);
-        let svg = node.to_svg(&self.grammar);
-
         self.settings = settings;
         Dispatch::<ImageState>::new().reduce_mut(|state: &mut ImageState| state.update_svg(self));
     }

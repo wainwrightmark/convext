@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, default, str::FromStr};
 use crate::core::prelude::*;
 use itertools::Itertools;
 use num::traits::ops::inv;
-use pest::iterators::Pairs;
+use pest::iterators::{Pairs, Pair};
 use pest::Parser;
 use pest_derive::Parser;
 use serde::{Deserialize, Serialize};
@@ -22,6 +22,31 @@ impl Value {
                 .get(&name.to_ascii_lowercase())
                 .ok_or(format!("Varaible '{}' not defined", name))
                 .map(|&x| x),
+        }
+    }
+
+    pub fn parse(next: Pair<Rule>)->Self{
+        let rule = next.as_rule();
+
+        match rule {
+            Rule::number => {
+                let val_string: String = next
+                    .as_str()
+                    .chars()
+                    .map(|c| match c {
+                        'm' => '-',
+                        'M' => '-',
+                        _ => c,
+                    })
+                    .collect();
+                let val = val_string.parse::<f32>().unwrap();
+                Value::Number { val }
+            }
+            Rule::variable => {
+                let name = next.as_str().replacen('?', "", 1);
+                Value::Variable { name }
+            }
+            _ => unreachable!(),
         }
     }
 }
@@ -131,30 +156,9 @@ impl TempProperty {
 
         let next = property.next().unwrap().into_inner().next().unwrap();
 
-        let rule = next.as_rule();
+        let value = Value::parse(next);
 
-        let val = match rule {
-            Rule::number => {
-                let val_string: String = next
-                    .as_str()
-                    .chars()
-                    .map(|c| match c {
-                        'm' => '-',
-                        'M' => '-',
-                        _ => c,
-                    })
-                    .collect();
-                let val = val_string.parse::<f32>().unwrap();
-                Value::Number { val }
-            }
-            Rule::variable => {
-                let name = next.as_str().replacen('?', "", 1);
-                Value::Variable { name }
-            }
-            _ => unreachable!(),
-        };
-
-        Ok(Self { key, value: val })
+        Ok(Self { key, value })
     }
 }
 

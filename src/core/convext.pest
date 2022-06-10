@@ -16,13 +16,6 @@ assignment = {keyword_let ~ name ~ number }
 property = {propname ~ value}
 invocation = {name ~ (property)* }
 
-rule = {keyword_rule ~ name ~ invocation* ~ keyword_end?}
+rule = {keyword_rule ~ name ~ value? ~ invocation* ~ keyword_end?}
 statement = {rule | assignment | invocation}
 file = {SOI ~ statement+ ~ EOI}
-
-
-//todo range
-//todo probability
-//todo conditionals
-//todo boolean
-//todo math (e.g. 1 plus ?myvar)

@@ -29,9 +29,11 @@ impl Default for ImageState {
 
 impl ImageState {
     pub fn update_svg(&mut self, input: &InputState) {
+        let mut rng = rand::SeedableRng::seed_from_u64(input.seed);
+
         let mut override_grammar = input.grammar.clone();
         override_grammar.override_defs(&input.overrides);
-        let node = override_grammar.expand(&input.settings);
+        let node = override_grammar.expand(&input.settings, &mut rng);
         let svg = node.to_svg(&override_grammar);
         self.svg = svg;
     }
