@@ -71,18 +71,20 @@ pascal h ?hue p 0.5 y0.25 xm0.5",
 
 "line y0.9 p0.01 v0.5 h120 a 0.5
 
-let probr 0.1
-let probl 0.1
+let probr 0.3
+let probl 0.3
+let angr 15
+let angl 330
 
 rul line
-square  l 4
-line ym8 p0.99
-
-rul line ?probr
-line ym4 r15
+square l 4 w0.5 ym5
+line ym8 p0.99 a0.9
 
 rul line ?probl
-line ym4 rm15
+line ym4 r ?angl
+
+rul line ?probr
+line ym4 r ?angr
 "
 )
 ];

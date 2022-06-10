@@ -23,6 +23,18 @@ impl Grammar {
 
         let all_properties = all_invocations.flat_map(|i| i.properties.iter());
 
+        let prob_properties = self.rules.values().flat_map(|r|r.cases
+            .iter()
+        .map(|c|c.probability.clone())
+        .flat_map(|p| {
+            if let Value::Variable { name } = p {
+                Some((name, PropertyType::UnitInterval))
+            } else {
+                None
+            }
+        })
+    );
+
         all_properties
             .flat_map(|p| {
                 if let Value::Variable { name } = p.value.clone() {
@@ -31,6 +43,7 @@ impl Grammar {
                     None
                 }
             })
+            .chain(prob_properties)
             .sorted_by_key(|p| p.0.clone())
             .group_by(|p| p.0.clone())
             .into_iter()
