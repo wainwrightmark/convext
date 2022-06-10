@@ -231,7 +231,7 @@ pub fn erorr_box() -> Html {
     let err = use_selector(|s: &InputState| s.error.clone())
         .as_ref()
         .clone()
-        .unwrap_or("‎".to_string());
+        .unwrap_or_else(||"‎".to_string());
     html!(<code> {err} </code>)
 }
 

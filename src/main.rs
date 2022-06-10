@@ -2,7 +2,6 @@
 #![allow(unused_variables)]
 #![allow(unused_imports)]
 #![allow(unused_parens)]
-#[allow(incomplete_features)]
 use crate::web::prelude::*;
 pub mod core;
 pub mod state;
