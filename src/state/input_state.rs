@@ -72,6 +72,13 @@ impl InputState {
         });
     }
 
+    pub fn reroll_seed(&mut self){
+        let new_seed = rand::random();
+        self.seed = new_seed;
+        Dispatch::<ImageState>::new().reduce_mut(|state: &mut ImageState| state.update_svg(self));
+    }
+
+
     pub fn get_variable_value(&self, key: &String) -> f32 {
         if let (Some(v)) = self.overrides.get(key) {
             *v

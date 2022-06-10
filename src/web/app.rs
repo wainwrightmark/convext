@@ -26,9 +26,11 @@ pub fn app() -> Html {
             <summary>{"Variables"}</summary>
             <SlidersControl/>
             </details>
-
-
+            <details>
+            <summary>{"Settings"}</summary>
             <SettingsControl/>
+            </details>
+
 
         </div>
     }
@@ -115,7 +117,16 @@ pub fn sliders_control() -> Html {
 
         html!(<InputSlider  {p_type} {prop_key} />)
     });
-    html!({for result})
+
+    let onclick = Dispatch::<InputState>::new().reduce_mut_callback(|s| s.reroll_seed());
+
+    html!(
+        <>
+        <button {onclick} >{"⚄"}</button>
+
+        {for result}
+    </>
+    )
 }
 
 #[derive(Properties, PartialEq)]
@@ -231,7 +242,7 @@ pub fn erorr_box() -> Html {
     let err = use_selector(|s: &InputState| s.error.clone())
         .as_ref()
         .clone()
-        .unwrap_or_else(||"‎".to_string());
+        .unwrap_or_else(|| "‎".to_string());
     html!(<code> {err} </code>)
 }
 
