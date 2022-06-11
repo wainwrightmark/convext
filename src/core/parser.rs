@@ -147,33 +147,3 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
 }
 
 
-#[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
-pub struct UserRule {
-    pub name: String,
-    pub cases: Vec<RuleCase>
-}
-
-#[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
-pub struct RuleCase{
-    pub probability: Value,
-    pub invocations: Vec<Invocation>, 
-}
-
-impl RuleCase{
-    pub fn should_enter(&self, grammar:&Grammar, rng:&mut StdRng)->bool{
-        let prob = self.probability.try_get_value(&grammar.defs).unwrap();
-
-        if prob >= 1.0{
-            return true;
-        }
-        else if prob <= 0.0{
-            return false;
-        }
-        else {
-            let enter= rng.gen_bool(prob.into());
-            return enter;
-        }
-
-
-    }
-}

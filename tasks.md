@@ -10,6 +10,8 @@
 - [x] Allow probabilities for rules 
 - [ ] Add ranges for animation. Also compound ranges, time `t` property
 - [x] More primitives `tri` `rtri` `pent` `hex`
+- [ ] `b` to draw strokes rather than fill
+- [ ] Rule probabilities should be cascading
 
 - [ ] Support math operators `sub` `add` `mul` `div` `abs`
 - [ ] Support comparison operators `eq` `neq` `lt` `gt` `leq` `geq`
@@ -17,6 +19,7 @@
 - [ ] Support conditionals `if` `elif`  `else` `fi`
 
 - [ ] Touch / Click events
+
 
 ## Code Editor
 
@@ -35,3 +38,8 @@
 - [ ] Show preview behind code window
 - [ ] Export SVG
 - [ ] Css Classes
+
+## Other
+
+- [ ] Use anyhow for error handling
+- [ ] Stop making everything public and in the prelude
