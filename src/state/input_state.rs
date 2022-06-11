@@ -80,9 +80,9 @@ impl InputState {
 
 
     pub fn get_variable_value(&self, key: &String) -> f32 {
-        if let (Some(v)) = self.overrides.get(key) {
+        if let (Some(v)) = self.overrides.get(&key.to_ascii_lowercase()) {
             *v
-        } else if let Some(v) = self.grammar.defs.get(key) {
+        } else if let Some(v) = self.grammar.defs.get(&key.to_ascii_lowercase()) {
             *v
         } else {
             0.0
@@ -90,7 +90,7 @@ impl InputState {
     }
 
     pub fn set_variable_value(&mut self, key: String, value: f32) {
-        self.overrides.insert(key, value);
+        self.overrides.insert(key.to_ascii_lowercase(), value);
         Dispatch::<ImageState>::new().reduce_mut(|state: &mut ImageState| state.update_svg(self));
     }
 

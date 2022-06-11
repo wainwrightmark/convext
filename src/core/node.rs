@@ -48,7 +48,7 @@ impl Node {
 
     pub fn to_svg_element(&self, grammar: &Grammar) -> String {
         let relative_properties =
-            NodeProperties::from_temp(&self.invocation.properties, &grammar.defs);
+            NodeProperties::from_temp(&self.invocation.properties, &grammar);
 
         if self.children.is_some() && !self.children.as_ref().unwrap().is_empty() {
             let child_text = self

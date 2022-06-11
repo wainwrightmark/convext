@@ -15,10 +15,10 @@ pub enum Value {
 }
 
 impl Value {
-    pub fn try_get_value(&self, defs: &BTreeMap<String, f32>) -> Result<f32, String> {
+    pub fn try_get_value(&self, grammar: &Grammar) -> Result<f32, String> {
         match self {
             Value::Number { val } => Ok(*val),
-            Value::Variable { name } => defs
+            Value::Variable { name } => grammar.defs
                 .get(&name.to_ascii_lowercase())
                 .ok_or(format!("Varaible '{}' not defined", name))
                 .map(|&x| x),
@@ -179,11 +179,11 @@ pub struct NodeProperties {
 }
 
 impl NodeProperties {
-    pub fn from_temp(vector: &Vec<TempProperty>, defs: &BTreeMap<String, f32>) -> Self {
+    pub fn from_temp(vector: &Vec<TempProperty>, grammar: &Grammar) -> Self {
         let mut properties = Self::default_additive();
 
         for prop in vector {
-            let value = prop.value.try_get_value(defs).unwrap();
+            let value = prop.value.try_get_value(grammar).unwrap();
             prop.key.set(&mut properties, value);
         }
 

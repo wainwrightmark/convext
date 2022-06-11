@@ -51,7 +51,7 @@ impl Invocation {
         Node {
             invocation: self.clone(),
             absolute_properties: parent_properties
-                .make_absolute(&NodeProperties::from_temp(&self.properties, &grammar.defs)),
+                .make_absolute(&NodeProperties::from_temp(&self.properties, &grammar)),
             children: None,
         }
     }

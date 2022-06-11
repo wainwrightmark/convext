@@ -60,7 +60,7 @@ impl Grammar {
 
     pub fn override_defs(&mut self, new_defs: &BTreeMap<String, f32>) {
         for (key, val) in new_defs {
-            self.defs.insert(key.clone(), *val);
+            self.defs.insert(key.to_ascii_lowercase(), *val);
         }
     }
 
