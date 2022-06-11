@@ -27,7 +27,7 @@ impl Grammar {
             .iter()
         .map(|c|c.probability.clone())
         .flat_map(|p| {
-            if let Some(Value::Variable { name } )= p {
+            if let Some(Expression::Variable { name } )= p {
                 Some((name, PropertyType::UnitInterval))
             } else {
                 None
@@ -37,7 +37,7 @@ impl Grammar {
 
         all_properties
             .flat_map(|p| {
-                if let Value::Variable { name } = p.value.clone() {
+                if let Expression::Variable { name } = p.value.clone() {
                     Some((name, p.key.get_type()))
                 } else {
                     None

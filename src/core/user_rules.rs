@@ -18,7 +18,7 @@ pub struct UserRule {
 
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct RuleCase {
-    pub probability: Option<Value>,
+    pub probability: Option<Expression>,
     pub invocations: Vec<Invocation>,
 }
 

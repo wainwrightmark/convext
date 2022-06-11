@@ -19,13 +19,13 @@ end",
 blackshape
 rul blackshape
 square h 120
-whiteshape p 0.5 x m0.5 y m0.5
+whiteshape p 0.5 x sub 0.5 y sub 0.5
 whiteshape p 0.5 x 0.5 y 0.5
 end
 
 rul whiteshape
 square
-blackshape p 0.5 x m0.5 y m0.5
+blackshape p 0.5 x sub 0.5 y sub 0.5
 blackshape p 0.5 x 0.5 y 0.5
 end",
 ];

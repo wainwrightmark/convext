@@ -6,6 +6,9 @@ mod properties;
 mod node;
 mod invocation;
 mod user_rules;
+mod expression;
+
+
 pub mod prelude {
     pub use crate::core::examples::*;
     pub use crate::core::grammar::*;
@@ -15,4 +18,5 @@ pub mod prelude {
     pub use crate::core::node::*;
     pub use crate::core::invocation::*;
     pub use crate::core::user_rules::*;
+    pub use crate::core::expression::*;
 }

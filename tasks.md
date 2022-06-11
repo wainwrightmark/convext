@@ -2,6 +2,7 @@
 - [ ] Polygons are not centred on the origin
 - [ ] `c` does not currently work for polygons
 - [ ] Flip y coordinates
+- [ ] Operator precedence
 
 ## Language Features
 
@@ -11,11 +12,11 @@
 - [ ] Add ranges for animation. Also compound ranges, time `t` property
 - [x] More primitives `tri` `rtri` `pent` `hex`
 - [ ] `b` to draw strokes rather than fill
-- [ ] Rule probabilities should be cascading
+- [x] Rule probabilities should be cascading
 
-- [ ] Support math operators `sub` `add` `mul` `div` `abs`
-- [ ] Support comparison operators `eq` `neq` `lt` `gt` `leq` `geq`
-- [ ] Support logic operators `and` `or` `xor` `not`
+- [x] Support math operators `sub` `add` `mul` `div` `abs`
+- [x] Support comparison operators `eq` `neq` `lt` `gt` `leq` `geq`
+- [x] Support logic operators `and` `or` `xor` `not`
 - [ ] Support conditionals `if` `elif`  `else` `fi`
 
 - [ ] Touch / Click events

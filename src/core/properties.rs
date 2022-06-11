@@ -8,48 +8,7 @@ use pest::Parser;
 use pest_derive::Parser;
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
-pub enum Value {
-    Number { val: f32 },
-    Variable { name: String },
-}
 
-impl Value {
-    pub fn try_get_value(&self, grammar: &Grammar) -> Result<f32, String> {
-        match self {
-            Value::Number { val } => Ok(*val),
-            Value::Variable { name } => grammar.defs
-                .get(&name.to_ascii_lowercase())
-                .ok_or(format!("Varaible '{}' not defined", name))
-                .map(|&x| x),
-        }
-    }
-
-    pub fn parse(next: Pair<Rule>)->Self{
-        let rule = next.as_rule();
-
-        match rule {
-            Rule::number => {
-                let val_string: String = next
-                    .as_str()
-                    .chars()
-                    .map(|c| match c {
-                        'm' => '-',
-                        'M' => '-',
-                        _ => c,
-                    })
-                    .collect();
-                let val = val_string.parse::<f32>().unwrap();
-                Value::Number { val }
-            }
-            Rule::variable => {
-                let name = next.as_str().replacen('?', "", 1);
-                Value::Variable { name }
-            }
-            _ => unreachable!(),
-        }
-    }
-}
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Serialize, Deserialize)]
 pub enum PropertyType {
@@ -146,7 +105,7 @@ impl std::str::FromStr for PropertyKey {
 #[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct TempProperty {
     pub key: PropertyKey,
-    pub value: Value,
+    pub value: Expression,
 }
 
 impl TempProperty {
@@ -156,7 +115,7 @@ impl TempProperty {
 
         let next = property.next().unwrap().into_inner().next().unwrap();
 
-        let value = Value::parse(next);
+        let value = Expression::parse(next);
 
         Ok(Self { key, value })
     }

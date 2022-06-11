@@ -41,13 +41,13 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
                         let mut invocations = Vec::<Invocation>::new();
 
 
-                        let mut probability: Option<Value> = None;
+                        let mut probability: Option<Expression> = None;
 
                         for p in inner {
                             match p.as_rule() {
                                 Rule::EOI => (),
-                                Rule::value => {
-                                    probability = Some(Value::parse(p.into_inner().next().unwrap())) ;
+                                Rule::expression => {
+                                    probability = Some(Expression::parse(p.into_inner().next().unwrap())) ;
                                 }
                                 Rule::keyword_end => (),
                                 Rule::invocation => {
