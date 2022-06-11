@@ -41,13 +41,13 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
                         let mut invocations = Vec::<Invocation>::new();
 
 
-                        let mut probability = Value::Number { val: 1.0 };
+                        let mut probability: Option<Value> = None;
 
                         for p in inner {
                             match p.as_rule() {
                                 Rule::EOI => (),
                                 Rule::value => {
-                                    probability = Value::parse(p.into_inner().next().unwrap());
+                                    probability = Some(Value::parse(p.into_inner().next().unwrap())) ;
                                 }
                                 Rule::keyword_end => (),
                                 Rule::invocation => {
@@ -65,6 +65,10 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
                         };
 
                         if let Some(existing) = rules.get_mut(&key){
+
+                            if existing.cases.iter().any(|c| c.probability.is_none()){
+                                return Err(format!("Rule '{}' is defined after an unconditional rule of the same name", name));
+                            }
                             existing.cases.push(rule_case);
                         }
                         else{

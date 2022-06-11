@@ -40,7 +40,7 @@ impl Invocation {
                 .unwrap()
                 .cases
                 .iter()
-                .filter(|&c|c.should_enter(grammar, rng))
+                .filter(|&c|c.should_enter(grammar, rng)).take(1) //only take the first condition which matches
                 .flat_map(|c|c.invocations.iter())
                 .map(|c| c.to_node(absolute_properties, grammar))
                 .collect_vec(),

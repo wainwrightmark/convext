@@ -69,22 +69,19 @@ pascal h ?hue p 0.5 y0.25 xm0.5",
     ),
     ("Tree",
 
-"line y0.9 p0.01 v0.5 h120 a 0.5
+"grow y0.9 p0.02 v0.5 h120 a 0.5
 
-let probr 0.3
-let probl 0.3
-let angr 15
-let angl 330
+let probBranch 0.1
+let angleRight 15
+let angleLeft 330
 
-rul line
+rul grow ?probBranch
+grow  r ?angl
+grow  r ?angr
+
+rul grow
 square l 4 w0.5 ym5
-line ym8 p0.99 a0.9
-
-rul line ?probl
-line ym4 r ?angl
-
-rul line ?probr
-line ym4 r ?angr
+grow ym8 p0.99 a0.9
 "
 )
 ];
