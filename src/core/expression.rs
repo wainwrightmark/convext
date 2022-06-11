@@ -66,6 +66,21 @@ impl FromStr for BinaryOperator{
             "leq" => Ok(BinaryOperator::LEq),
             "geq" => Ok(BinaryOperator::GEq),
 
+            "+" => Ok(BinaryOperator::Add),
+            "-" => Ok(BinaryOperator::Sub),
+            "*" => Ok(BinaryOperator::Mul),
+            "/" => Ok(BinaryOperator::Div),
+            
+            "&&" => Ok(BinaryOperator::Add),
+            "||" => Ok(BinaryOperator::Or),
+
+            "==" => Ok(BinaryOperator::Eq),
+            "!=" => Ok(BinaryOperator::Neq),
+            "<" => Ok(BinaryOperator::Lt),
+            ">" => Ok(BinaryOperator::Gt),
+            "<=" => Ok(BinaryOperator::LEq),
+            ">=" => Ok(BinaryOperator::GEq),
+
             _=>  Err(format!("Could not parse {} as binary operator", s))
         }
     }
@@ -84,6 +99,7 @@ impl FromStr for UnaryOperator{
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_ascii_lowercase().as_str() {
             "sub" => Ok(UnaryOperator::Sub),
+            "-" => Ok(UnaryOperator::Sub),
             "abs" => Ok(UnaryOperator::Abs),
             "sig" => Ok(UnaryOperator::Sig),
             _=>  Err(format!("Could not parse {} as unary operator", s))

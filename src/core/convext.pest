@@ -6,12 +6,12 @@ COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 keyword_let = {^"let"}
 keyword_rule = {^"rul"}
 keyword_end = {^"end"}
-unary_op = {^"sub" | ^"abs" | ^"sig"}
-binary_op = {^"add" | ^"sub" | ^"mul" | ^"div"| ^"and"| ^"or"| ^"eq"| ^"neq"| ^"lt"| ^"gt"| ^"leq"| ^"geq"}
+unary_op = {^"sub" | ^"abs" | ^"sig" | "-"}
+binary_op = {^"add" | ^"sub" | ^"mul" | ^"div"| ^"and"| ^"or"| ^"eq"| ^"neq"| ^"lt"| ^"gt"| ^"leq"| ^"geq" | "+" | "-" | "*" | "/" | "&&" | "||" | "==" | "!=" | "<=" | ">+" | "<" | ">"}
 keyword = {keyword_let | keyword_rule | keyword_end | unary_op}
 name = @{!keyword ~ ASCII_ALPHA ~ ASCII_ALPHANUMERIC*}
 propname = @{ASCII_ALPHA}
-number = @{"-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?}
+number = @{ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?}
 variable = @{"?" ~ name}
 unary = {unary_op ~ expression}
 binary = {simple_expression ~ binary_op ~ expression}
