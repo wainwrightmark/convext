@@ -64,6 +64,22 @@ impl PropertyKey {
         }
     }
 
+    pub fn get(self, properties:  &NodeProperties)-> f32{
+        match self {
+            PropertyKey::P => properties.p,
+            PropertyKey::L => properties.l,
+            PropertyKey::W => properties.w ,
+            PropertyKey::C => properties.c ,
+            PropertyKey::X => properties.x,
+            PropertyKey::Y => properties.y ,
+            PropertyKey::R => properties.r ,
+            PropertyKey::H => properties.h ,
+            PropertyKey::S => properties.s ,
+            PropertyKey::V => properties.v,
+            PropertyKey::A => properties.a ,
+        }
+    }
+
     pub fn get_type(self) -> PropertyType {
         match self {
             PropertyKey::P => PropertyType::AnyPositive,
@@ -115,7 +131,7 @@ impl TempProperty {
 
         let next = property.next().unwrap().into_inner().next().unwrap();
 
-        let value = Expression::parse(next);
+        let value = Expression::parse(next)?;
 
         Ok(Self { key, value })
     }
@@ -138,11 +154,11 @@ pub struct NodeProperties {
 }
 
 impl NodeProperties {
-    pub fn from_temp(vector: &Vec<TempProperty>, grammar: &Grammar) -> Self {
+    pub fn from_temp(vector: &Vec<TempProperty>, grammar: &Grammar, context: &NodeProperties) -> Self {
         let mut properties = Self::default_additive();
 
         for prop in vector {
-            let value = prop.value.try_get_value(grammar).unwrap();
+            let value = prop.value.try_get_value(grammar, context).unwrap();
             prop.key.set(&mut properties, value);
         }
 

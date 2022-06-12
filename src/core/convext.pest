@@ -9,13 +9,14 @@ keyword_end = {^"end"}
 unary_op = {^"sub" | ^"abs" | ^"sig" | "-"}
 binary_op = {^"add" | ^"sub" | ^"mul" | ^"div"| ^"and"| ^"or"| ^"eq"| ^"neq"| ^"lt"| ^"gt"| ^"leq"| ^"geq" | "+" | "-" | "*" | "/" | "&&" | "||" | "==" | "!=" | "<=" | ">+" | "<" | ">"}
 keyword = {keyword_let | keyword_rule | keyword_end | unary_op}
-name = @{!keyword ~ ASCII_ALPHA ~ ASCII_ALPHANUMERIC*}
+name = @{ !(keyword  ~ !(ASCII_ALPHANUMERIC)) ~ ASCII_ALPHA ~ ASCII_ALPHANUMERIC+}
 propname = @{ASCII_ALPHA}
 number = @{ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?}
 variable = @{"?" ~ name}
+property_access = @{"?" ~ propname}
 unary = {unary_op ~ expression}
 binary = {simple_expression ~ binary_op ~ expression}
-simple_expression = {number | variable | unary}
+simple_expression = {number | property_access | variable  | unary}
 expression = { binary | simple_expression }
 
 assignment = {keyword_let ~ name ~ number }

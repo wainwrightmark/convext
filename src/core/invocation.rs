@@ -40,7 +40,7 @@ impl Invocation {
                 .unwrap()
                 .cases
                 .iter()
-                .filter(|&c|c.should_enter(grammar, rng)).take(1) //only take the first condition which matches
+                .filter(|&c|c.should_enter(grammar,  &absolute_properties, rng,)).take(1) //only take the first condition which matches
                 .flat_map(|c|c.invocations.iter())
                 .map(|c| c.to_node(absolute_properties, grammar))
                 .collect_vec(),
@@ -51,7 +51,7 @@ impl Invocation {
         Node {
             invocation: self.clone(),
             absolute_properties: parent_properties
-                .make_absolute(&NodeProperties::from_temp(&self.properties, &grammar)),
+                .make_absolute(&NodeProperties::from_temp(&self.properties, &grammar, &parent_properties)),
             children: None,
         }
     }

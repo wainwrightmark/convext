@@ -121,6 +121,7 @@ impl UnaryOperator{
 pub enum Expression {
     Number { val: f32 },
     Variable { name: String },
+    PropertyAccess { property: PropertyKey },
     Unary {operator: UnaryOperator, operand: Box<Expression>},
     Binary { left: Box<Expression>,  operator: BinaryOperator, right: Box<Expression>},
 }
@@ -131,6 +132,7 @@ impl Expression {
         match self {
             Expression::Number { val } => self,
             Expression::Variable { name } => Self::Variable { name },
+            Expression::PropertyAccess { property }=> Self::PropertyAccess { property },
             Expression::Unary { operator, operand } => {
                 let o = operand.fold();
                 if let Expression::Number { val: v } = o{
@@ -138,6 +140,7 @@ impl Expression {
                 }
                 Self::Unary { operator, operand: o.into() }
             },
+
             Expression::Binary { left, operator, right } => {
                 let l = left.fold();                
                 let r = right.fold();
@@ -152,7 +155,7 @@ impl Expression {
         }
     }
 
-    pub fn try_get_value(&self, grammar: &Grammar) -> Result<f32, String> {
+    pub fn try_get_value(&self, grammar: &Grammar, context: &NodeProperties) -> Result<f32, String> {
         match self {
             Expression::Number { val } => Ok(*val),
             Expression::Variable { name } => grammar.defs
@@ -160,14 +163,23 @@ impl Expression {
                 .ok_or(format!("Varaible '{}' not defined", name))
                 .map(|&x| x),
             Expression::Unary { operator, operand } =>{
-                let v = operand.try_get_value(grammar)?;
+                let v = operand.try_get_value(grammar, context)?;
                 Ok(operator.apply(v))
             } ,
-            Expression::Binary { left, operator, right } => todo!(),
+
+            Expression::PropertyAccess { property }=>{
+                Ok(property.get(context))
+            }
+            Expression::Binary { left, operator, right } => {
+                let l = left.try_get_value(grammar, context)?;
+                let r = right.try_get_value(grammar, context)?;
+                Ok(operator.apply(l, r))
+
+            },
         }
     }
 
-    pub fn parse(next: Pair<Rule>)->Self{
+    pub fn parse(next: Pair<Rule>)->Result<Self, String>{
         let rule = next.as_rule();
 
         match rule {
@@ -179,30 +191,37 @@ impl Expression {
                 Self::parse(next.into_inner().next().unwrap())
             }
 
+
             Rule::number => {
                 let val = next.as_str().parse::<f32>().unwrap();
-                Expression::Number { val }
+                Ok(Expression::Number { val })
             }
             Rule::variable => {
                 let name = next.as_str().replacen('?', "", 1);
-                Expression::Variable { name }
+                Ok(Expression::Variable { name })
+            }
+
+            Rule::property_access =>{
+                let name = next.as_str().replacen('?', "", 1);
+                let property = PropertyKey::from_str(name.as_str())?;
+                Ok(Expression::PropertyAccess { property })
             }
             Rule::unary =>{
                 let mut inner = next.into_inner();
                 let operator = inner.next().unwrap().as_str().parse::<UnaryOperator>().unwrap();
-                let operand = Self:: parse(inner.next().unwrap()).into();
+                let operand = Self:: parse(inner.next().unwrap())?.into();
 
-                Expression::Unary { operator, operand }.fold()
+                Ok(Expression::Unary { operator, operand }.fold())
 
             }
             
             Rule::binary =>{
                 let mut inner = next.into_inner();
-                let left = Self:: parse(inner.next().unwrap()).into();
+                let left = Self:: parse(inner.next().unwrap())?.into();
                 let operator = inner.next().unwrap().as_str().parse::<BinaryOperator>().unwrap();
-                let right = Self:: parse(inner.next().unwrap()).into();
+                let right = Self:: parse(inner.next().unwrap())?.into();
 
-                Expression::Binary { left, operator, right }.fold()
+                Ok(Expression::Binary { left, operator, right }.fold())
             }
 
             _ => {

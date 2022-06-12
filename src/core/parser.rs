@@ -47,7 +47,7 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
                             match p.as_rule() {
                                 Rule::EOI => (),
                                 Rule::expression => {
-                                    probability = Some(Expression::parse(p.into_inner().next().unwrap())) ;
+                                    probability = Some(Expression::parse(p.into_inner().next().unwrap())?) ;
                                 }
                                 Rule::keyword_end => (),
                                 Rule::invocation => {

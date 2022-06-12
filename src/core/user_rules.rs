@@ -23,9 +23,9 @@ pub struct RuleCase {
 }
 
 impl RuleCase {
-    pub fn should_enter(&self, grammar: &Grammar, rng: &mut StdRng) -> bool {
+    pub fn should_enter(&self, grammar: &Grammar, context: &NodeProperties,  rng: &mut StdRng) -> bool {
         if let Some(value) = &self.probability {
-            let prob = value.try_get_value(&grammar).unwrap();
+            let prob = value.try_get_value(&grammar, context).unwrap();
             if prob >= 1.0 {
                 true
             } else if prob <= 0.0 {

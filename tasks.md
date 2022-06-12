@@ -18,6 +18,8 @@
 - [x] Support comparison operators `eq` `neq` `lt` `gt` `leq` `geq`
 - [x] Support logic operators `and` `or` `xor` `not`
 - [ ] Support conditionals `if` `elif`  `else` `fi`
+- [x] Property access in rule probabilities e.g. grow ?d <= 10
+- [x] Property acces in invocations e.g. square r-?r
 
 - [ ] Touch / Click events
 
