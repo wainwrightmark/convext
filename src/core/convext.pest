@@ -16,7 +16,7 @@ variable = @{"?" ~ name}
 property_access = @{"?" ~ propname}
 unary = {unary_op ~ expression}
 binary = {simple_expression ~ binary_op ~ expression}
-simple_expression = {number | property_access | variable  | unary}
+simple_expression = {number | variable | property_access  | unary}
 expression = { binary | simple_expression }
 
 assignment = {keyword_let ~ name ~ number }

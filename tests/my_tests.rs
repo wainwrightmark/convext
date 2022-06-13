@@ -4,7 +4,7 @@ use ntest::test_case;
 use rand::SeedableRng;
 // use rand::{prelude::StdRng, Rng};
 
-pub const EXAMPLES: [&str; 6] = [
+pub const EXAMPLES: [&str; 7] = [
     "Circle",
     "Circle p0.5",
     "let myvar 100
@@ -28,6 +28,13 @@ square
 blackshape p 0.5 x sub 0.5 y sub 0.5
 blackshape p 0.5 x 0.5 y 0.5
 end",
+"myshape
+let alpha 0.9
+rul myshape ?h lt 320
+square v 0.5 r?h
+myshape p 0.75 h 10 a?alpha
+end"
+
 ];
 
 #[test_case(0)]
