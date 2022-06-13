@@ -14,6 +14,8 @@ pub enum PropertyType {
     Any,
     UnitInterval,
     Degrees,
+    IntegerPositive,
+    Boolean
 }
 
 impl PropertyType {
@@ -24,6 +26,8 @@ impl PropertyType {
             PropertyType::AnyPositive => (0.0, 2.0, 0.05),
             PropertyType::Any => (-2.0, 2.0, 0.05),
             PropertyType::Degrees => (0.0, 360.0, 5.0),
+            PropertyType::Boolean => (0.0,1.0,1.0),
+            PropertyType::IntegerPositive => (0.0,1000.0,1.0),
         }
     }
 }
@@ -43,6 +47,8 @@ pub enum PropertyKey {
     S,
     V,
     A,
+
+    D
 }
 
 impl PropertyKey {
@@ -59,6 +65,7 @@ impl PropertyKey {
             PropertyKey::S => properties.s = value,
             PropertyKey::V => properties.v = value,
             PropertyKey::A => properties.a = value,
+            PropertyKey::D => properties.d = value.round() as usize,
         }
     }
 
@@ -75,6 +82,7 @@ impl PropertyKey {
             PropertyKey::S => properties.s,
             PropertyKey::V => properties.v,
             PropertyKey::A => properties.a,
+            PropertyKey::D => properties.d as f32,
         }
     }
 
@@ -91,6 +99,7 @@ impl PropertyKey {
             PropertyKey::S => PropertyType::UnitInterval,
             PropertyKey::V => PropertyType::UnitInterval,
             PropertyKey::A => PropertyType::UnitInterval,
+            PropertyKey::D => PropertyType::IntegerPositive,
         }
     }
 }
@@ -111,6 +120,7 @@ impl std::str::FromStr for PropertyKey {
             "s" => Ok(PropertyKey::S),
             "v" => Ok(PropertyKey::V),
             "a" => Ok(PropertyKey::A),
+            "d" => Ok(PropertyKey::D),
             x => return Err(format!("Property '{}' not defined", x)).unwrap(),
         }
     }

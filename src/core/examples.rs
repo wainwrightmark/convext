@@ -6,7 +6,7 @@ pub struct Creation {
     pub text: String,
 }
 
-pub const EXAMPLES: [(&str, &str); 5] = [
+pub const EXAMPLES: [(&str, &str); 6] = [
     ("New", "circle v0.5"),
     (
         "Circles",
@@ -84,4 +84,25 @@ square l 4 w0.5 ysub5
 grow ysub8 p0.99 a0.9
 ",
     ),
+    (
+        "Maze",
+        "maze  r45
+
+        rul maze 
+        row p 0.25 x-1 y-1
+        rul row
+        column
+        row y 1
+        
+        rul column
+        shape p0.5
+        column x 1
+        
+        rul shape 0.5
+        square w 0.1 l1.5 r 45
+        
+        rul shape
+        square w 0.1 l1.5 r sub45"
+
+    )
 ];
