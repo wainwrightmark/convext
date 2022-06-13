@@ -28,13 +28,12 @@ square
 blackshape p 0.5 x sub 0.5 y sub 0.5
 blackshape p 0.5 x 0.5 y 0.5
 end",
-"myshape
+    "myshape
 let alpha 0.9
 rul myshape ?h lt 320
 square v 0.5 r?h
 myshape p 0.75 h 10 a?alpha
-end"
-
+end",
 ];
 
 #[test_case(0)]
@@ -49,7 +48,7 @@ fn test_svg(index: usize) {
 
     let mut rng = SeedableRng::seed_from_u64(100);
 
-    let node = grammar.expand(&ExpandSettings::default(),&mut rng);
+    let node = grammar.expand(&ExpandSettings::default(), &mut rng);
 
     let svg = node.to_svg(&grammar);
 

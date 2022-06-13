@@ -67,9 +67,9 @@ end",
         pascal h ?hue p 0.5 y0.25 x0.5
         pascal h ?hue p 0.5 y0.25 xsub0.5",
     ),
-    ("Tree",
-
-"grow y0.9 p0.02 v0.5 h120 a 0.5
+    (
+        "Tree",
+        "grow y0.9 p0.02 v0.5 h120 a 0.5
 
 let probBranch 0.1
 let angleRight 15
@@ -82,6 +82,6 @@ grow  r ?angr
 rul grow
 square l 4 w0.5 ysub5
 grow ysub8 p0.99 a0.9
-"
-)
+",
+    ),
 ];

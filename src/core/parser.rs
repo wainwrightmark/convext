@@ -40,14 +40,14 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
 
                         let mut invocations = Vec::<Invocation>::new();
 
-
                         let mut probability: Option<Expression> = None;
 
                         for p in inner {
                             match p.as_rule() {
                                 Rule::EOI => (),
                                 Rule::expression => {
-                                    probability = Some(Expression::parse(p.into_inner().next().unwrap())?) ;
+                                    probability =
+                                        Some(Expression::parse(p.into_inner().next().unwrap())?);
                                 }
                                 Rule::keyword_end => (),
                                 Rule::invocation => {
@@ -59,29 +59,24 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
                         }
 
                         let key = name.to_ascii_lowercase();
-                        let rule_case = RuleCase{
+                        let rule_case = RuleCase {
                             probability,
                             invocations,
                         };
 
-                        if let Some(existing) = rules.get_mut(&key){
-
-                            if existing.cases.iter().any(|c| c.probability.is_none()){
+                        if let Some(existing) = rules.get_mut(&key) {
+                            if existing.cases.iter().any(|c| c.probability.is_none()) {
                                 return Err(format!("Rule '{}' is defined after an unconditional rule of the same name", name));
                             }
                             existing.cases.push(rule_case);
-                        }
-                        else{
-
-                            let new_rule = UserRule{
+                        } else {
+                            let new_rule = UserRule {
                                 name: name.clone(),
-                                cases: vec![rule_case]
-                                
+                                cases: vec![rule_case],
                             };
 
                             rules.insert(key, new_rule);
                         }
-
                     }
                     Rule::assignment => {
                         let mut inner = statement.into_inner();
@@ -127,7 +122,7 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
     }
 
     for (_, user_rule) in rules.iter() {
-        for rule_case in user_rule.cases.iter(){
+        for rule_case in user_rule.cases.iter() {
             for rule_name in rule_case.invocations.iter().filter_map(|i| {
                 if let Method::Rule(r) = i.method.clone() {
                     Some(r)
@@ -140,7 +135,6 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
                 }
             }
         }
-       
     }
 
     Ok(Grammar {
@@ -149,5 +143,3 @@ pub fn parse(input: &str) -> Result<Grammar, String> {
         top_level,
     })
 }
-
-

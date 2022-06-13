@@ -18,22 +18,23 @@ pub struct Grammar {
 
 impl Grammar {
     pub fn get_variables(&self) -> Vec<(String, Option<PropertyType>)> {
-        let rule_invocations = self.rules.values().flat_map(|z| z.cases.iter().flat_map(|c|c.invocations.iter()));                
-        let all_invocations = self.top_level.iter().chain (rule_invocations);
+        let rule_invocations = self
+            .rules
+            .values()
+            .flat_map(|z| z.cases.iter().flat_map(|c| c.invocations.iter()));
+        let all_invocations = self.top_level.iter().chain(rule_invocations);
 
         let all_properties = all_invocations.flat_map(|i| i.properties.iter());
 
-        let prob_properties = self.rules.values().flat_map(|r|r.cases
-            .iter()
-        .map(|c|c.probability.clone())
-        .flat_map(|p| {
-            if let Some(Expression::Variable { name } )= p {
-                Some((name, PropertyType::UnitInterval))
-            } else {
-                None
-            }
-        })
-    );
+        let prob_properties = self.rules.values().flat_map(|r| {
+            r.cases.iter().map(|c| c.probability.clone()).flat_map(|p| {
+                if let Some(Expression::Variable { name }) = p {
+                    Some((name, PropertyType::UnitInterval))
+                } else {
+                    None
+                }
+            })
+        });
 
         all_properties
             .flat_map(|p| {
@@ -64,7 +65,7 @@ impl Grammar {
         }
     }
 
-    pub fn expand(&self, settings: &ExpandSettings, rng:&mut StdRng,) -> Node {
+    pub fn expand(&self, settings: &ExpandSettings, rng: &mut StdRng) -> Node {
         let mut current = ExpandStatistics::default();
         let nodes = self
             .top_level
@@ -124,15 +125,12 @@ pub struct ExpandSettings {
 impl ExpandSettings {
     ///Should this node be culled, according to the settings
     pub fn should_cull(&self, node: &Node) -> bool {
-        if node.absolute_properties.a < self.min_a {
-            true
-        } else if node.absolute_properties.d > self.max_depth {
-            true
-        } else if node.absolute_properties.p * node.absolute_properties.w < self.min_p {
-            true
-        } else if node.absolute_properties.p * node.absolute_properties.l < self.min_p {
-            true
-        } else if node.absolute_properties.x.abs() - node.absolute_properties.p > 1.5 {
+        if node.absolute_properties.a < self.min_a
+            || node.absolute_properties.d > self.max_depth
+            || node.absolute_properties.p * node.absolute_properties.w < self.min_p
+            || node.absolute_properties.p * node.absolute_properties.l < self.min_p
+            || node.absolute_properties.x.abs() - node.absolute_properties.p > 1.5
+        {
             true
         } else {
             node.absolute_properties.y.abs() - node.absolute_properties.p > 1.5

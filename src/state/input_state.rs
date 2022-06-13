@@ -54,7 +54,7 @@ impl Default for InputState {
             overrides: Default::default(),
             settings: Default::default(),
             error: Default::default(),
-            seed: 100
+            seed: 100,
         }
     }
 }
@@ -72,14 +72,13 @@ impl InputState {
         });
     }
 
-    pub fn reroll_seed(&mut self){
+    pub fn reroll_seed(&mut self) {
         let new_seed = rand::random();
         self.seed = new_seed;
         Dispatch::<ImageState>::new().reduce_mut(|state: &mut ImageState| state.update_svg(self));
     }
 
-
-    pub fn get_variable_value(&self, key: &String) -> f32 {
+    pub fn get_variable_value(&self, key: &str) -> f32 {
         if let (Some(v)) = self.overrides.get(&key.to_ascii_lowercase()) {
             *v
         } else if let Some(v) = self.grammar.defs.get(&key.to_ascii_lowercase()) {

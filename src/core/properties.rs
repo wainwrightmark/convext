@@ -3,12 +3,10 @@ use std::{collections::BTreeMap, default, str::FromStr};
 use crate::core::prelude::*;
 use itertools::Itertools;
 use num::traits::ops::inv;
-use pest::iterators::{Pairs, Pair};
+use pest::iterators::{Pair, Pairs};
 use pest::Parser;
 use pest_derive::Parser;
 use serde::{Deserialize, Serialize};
-
-
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Serialize, Deserialize)]
 pub enum PropertyType {
@@ -64,19 +62,19 @@ impl PropertyKey {
         }
     }
 
-    pub fn get(self, properties:  &NodeProperties)-> f32{
+    pub fn get(self, properties: &NodeProperties) -> f32 {
         match self {
             PropertyKey::P => properties.p,
             PropertyKey::L => properties.l,
-            PropertyKey::W => properties.w ,
-            PropertyKey::C => properties.c ,
+            PropertyKey::W => properties.w,
+            PropertyKey::C => properties.c,
             PropertyKey::X => properties.x,
-            PropertyKey::Y => properties.y ,
-            PropertyKey::R => properties.r ,
-            PropertyKey::H => properties.h ,
-            PropertyKey::S => properties.s ,
+            PropertyKey::Y => properties.y,
+            PropertyKey::R => properties.r,
+            PropertyKey::H => properties.h,
+            PropertyKey::S => properties.s,
             PropertyKey::V => properties.v,
-            PropertyKey::A => properties.a ,
+            PropertyKey::A => properties.a,
         }
     }
 
@@ -154,7 +152,11 @@ pub struct NodeProperties {
 }
 
 impl NodeProperties {
-    pub fn from_temp(vector: &Vec<TempProperty>, grammar: &Grammar, context: &NodeProperties) -> Self {
+    pub fn from_temp(
+        vector: &Vec<TempProperty>,
+        grammar: &Grammar,
+        context: &NodeProperties,
+    ) -> Self {
         let mut properties = Self::default_additive();
 
         for prop in vector {

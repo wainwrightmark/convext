@@ -75,12 +75,12 @@ impl Primitive {
 
                 format!("<rect x={x} y={y} width={width} height={height} rx={rx} ry={ry} {color}  {rotate_transform} />", 
                 x=x,
-                y=y,            
+                y=y,
                 rx = rx,
                 ry=ry,
                 width=width,
                 height=height,
-                color= color,      
+                color= color,
                 rotate_transform = rotate_transform
             )
             }
