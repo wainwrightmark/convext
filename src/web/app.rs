@@ -91,9 +91,8 @@ pub fn settings_control() -> Html {
         });
 
     html!(
-        <details>
-            <summary>{"Settings"}</summary>
-                <div class="slider">
+        <>
+        <div class="slider">
                     <code style="width:80px" >{"Max Nodes"}</code>
                     <input style="width:80px" oninput={on_max_nodes_input} type="number"  value={format!("{}",settings.max_nodes )} min={100} max={10000}  step={100} />
                 </div>
@@ -101,7 +100,7 @@ pub fn settings_control() -> Html {
                     <code style="width:80px" >{"Max Depth"}</code>
                     <input style="width:80px" oninput={on_max_depth_input} type="number"  value={format!("{}",settings.max_depth )} min={4} max={40}  step={1} />
                 </div>
-        </details>
+                </>
 
 
     )
