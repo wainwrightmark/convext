@@ -4,7 +4,7 @@ COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 
 
 keyword_let = {^"let"}
-keyword_rule = {^"rul"}
+keyword_rule = {^"rule"| ^"rul" }
 keyword_end = {^"end"}
 unary_op = {^"sub" | ^"abs" | ^"sig" | "-"}
 binary_op = {^"add" | ^"sub" | ^"mul" | ^"div"| ^"and"| ^"or"| ^"eq"| ^"neq"| ^"lt"| ^"gt"| ^"leq"| ^"geq" | "+" | "-" | "*" | "/" | "&&" | "||" | "==" | "!=" | "<=" | ">+" | "<" | ">"}
