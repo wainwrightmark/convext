@@ -7,160 +7,102 @@ use num::traits::ops::inv;
 use pest::iterators::{Pair, Pairs};
 use pest::Parser;
 use pest_derive::Parser;
+use rand::Rng;
+use rand::prelude::StdRng;
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Eq, Ord, PartialOrd, Clone, Copy, Serialize, Deserialize)]
-pub enum BinaryOperator {
-    Add,
-    Sub,
-    Mul,
-    Div,
-
-    And,
-    Or,
-
-    Eq,
-    Neq,
-    Lt,
-    Gt,
-    LEq,
-    GEq,
+#[derive(PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
+pub enum ExpressionOrRange {
+    Range {
+        is_random: bool,
+        first: Expression,
+        second: Expression,
+    },
+    Exp(Expression),
 }
 
-impl BinaryOperator {
-    pub fn apply(self, left: f32, right: f32) -> f32 {
+impl ExpressionOrRange {
+    pub fn get_variables(&self) -> Box<dyn Iterator<Item = String>> {
         match self {
-            BinaryOperator::Add => left + right,
-            BinaryOperator::Sub => left - right,
-            BinaryOperator::Mul => left * right,
-            BinaryOperator::Div => left / right,
-            BinaryOperator::And => {
-                if left != 0.0 && right != 0.0 {
-                    1.0
-                } else {
-                    0.0
-                }
-            }
-            BinaryOperator::Or => {
-                if left != 0.0 || right != 0.0 {
-                    1.0
-                } else {
-                    0.0
-                }
-            }
-            BinaryOperator::Eq => {
-                if left == right {
-                    1.0
-                } else {
-                    0.0
-                }
-            }
-            BinaryOperator::Neq => {
-                if left != right {
-                    1.0
-                } else {
-                    0.0
-                }
-            }
-            BinaryOperator::Lt => {
-                if left < right {
-                    1.0
-                } else {
-                    0.0
-                }
-            }
-            BinaryOperator::Gt => {
-                if left > right {
-                    1.0
-                } else {
-                    0.0
-                }
-            }
-            BinaryOperator::LEq => {
-                if left <= right {
-                    1.0
-                } else {
-                    0.0
-                }
-            }
-            BinaryOperator::GEq => {
-                if left >= right {
-                    1.0
-                } else {
-                    0.0
-                }
-            }
+            ExpressionOrRange::Range {
+                is_random,
+                first,
+                second,
+            } => Box::new(first.get_variables().chain(second.get_variables())),
+            ExpressionOrRange::Exp(e) => e.get_variables(),
         }
     }
-}
 
-impl FromStr for BinaryOperator {
-    type Err = String;
+    pub fn try_get_value(
+        &self,
+        grammar: &Grammar,
+        context: &NodeProperties,
+        rng: &mut StdRng,
+    ) -> Result<ValueOrRange, String> {
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_ascii_lowercase().as_str() {
-            "add" => Ok(BinaryOperator::Add),
-            "sub" => Ok(BinaryOperator::Sub),
-            "mul" => Ok(BinaryOperator::Mul),
-            "div" => Ok(BinaryOperator::Div),
-
-            "and" => Ok(BinaryOperator::Add),
-            "or" => Ok(BinaryOperator::Or),
-
-            "eq" => Ok(BinaryOperator::Eq),
-            "neq" => Ok(BinaryOperator::Neq),
-            "lt" => Ok(BinaryOperator::Lt),
-            "gt" => Ok(BinaryOperator::Gt),
-            "leq" => Ok(BinaryOperator::LEq),
-            "geq" => Ok(BinaryOperator::GEq),
-
-            "+" => Ok(BinaryOperator::Add),
-            "-" => Ok(BinaryOperator::Sub),
-            "*" => Ok(BinaryOperator::Mul),
-            "/" => Ok(BinaryOperator::Div),
-
-            "&&" => Ok(BinaryOperator::Add),
-            "||" => Ok(BinaryOperator::Or),
-
-            "==" => Ok(BinaryOperator::Eq),
-            "!=" => Ok(BinaryOperator::Neq),
-            "<" => Ok(BinaryOperator::Lt),
-            ">" => Ok(BinaryOperator::Gt),
-            "<=" => Ok(BinaryOperator::LEq),
-            ">=" => Ok(BinaryOperator::GEq),
-
-            _ => Err(format!("Could not parse {} as binary operator", s)),
-        }
-    }
-}
-
-#[derive(PartialEq, Eq, Ord, PartialOrd, Clone, Copy, Serialize, Deserialize)]
-pub enum UnaryOperator {
-    Sub,
-    Abs,
-    Sig,
-}
-
-impl FromStr for UnaryOperator {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_ascii_lowercase().as_str() {
-            "sub" => Ok(UnaryOperator::Sub),
-            "-" => Ok(UnaryOperator::Sub),
-            "abs" => Ok(UnaryOperator::Abs),
-            "sig" => Ok(UnaryOperator::Sig),
-            _ => Err(format!("Could not parse {} as unary operator", s)),
-        }
-    }
-}
-
-impl UnaryOperator {
-    pub fn apply(self, value: f32) -> f32 {
         match self {
-            UnaryOperator::Sub => -value,
-            UnaryOperator::Abs => value.abs(),
-            UnaryOperator::Sig => value.signum(),
+            ExpressionOrRange::Range { is_random, first, second } =>{
+
+                let start = first.try_get_value(grammar, context, rng)?.min_value();
+                let end = second.try_get_value(grammar, context, rng)?.max_value();
+
+                if *is_random{
+                    let v =if start <= end{
+                        rng.gen_range(start..=end)
+                        
+                    }else{
+                        rng.gen_range(end..=start)
+                    };
+                    Ok(ValueOrRange::Value(v))
+                }else{
+                    Ok(ValueOrRange::Range { start, end }) 
+                }
+            },
+            ExpressionOrRange::Exp(e) => e.try_get_value(grammar, context, rng),
+        }
+    }
+
+    pub fn parse(next: Pair<Rule>) -> Result<Self, String> {
+        let rule = next.as_rule();
+
+        match rule {
+            Rule::expression =>{
+                let exp = Expression::parse(next)?;
+                    let r = ExpressionOrRange::Exp(exp);
+                    Ok(r)
+            },
+            Rule::range => {
+                let mut inner2 = next.into_inner();
+                let first = Expression::parse(inner2.next().unwrap())?;
+                //let dots = inner2.next();
+                let second = Expression::parse(inner2.next().unwrap())?;
+                let r = ExpressionOrRange::Range {
+                    is_random: false,
+                    first,
+                    second,
+                };
+                Ok(r)
+            }
+            Rule::range_random => {
+                let mut inner2 = next.into_inner();
+                let first = Expression::parse(inner2.next().unwrap())?;
+                //let dots = inner2.next();
+                let second = Expression::parse(inner2.next().unwrap())?;
+                let r = ExpressionOrRange::Range {
+                    is_random: true,
+                    first,
+                    second,
+                };
+                Ok(r)
+            }
+
+            Rule::expression_or_range => {
+                let mut inner = next.into_inner();
+                let next = inner.next().unwrap();
+
+                Self::parse(next)
+            }
+            _ => unreachable!(),
         }
     }
 }
@@ -188,6 +130,21 @@ pub enum Expression {
 }
 
 impl Expression {
+    pub fn get_variables(&self) -> Box<dyn Iterator<Item = String>> {
+        match self {
+            Expression::Unary { operator, operand } => return operand.get_variables(),
+            Expression::Binary {
+                left,
+                operator,
+                right,
+            } => return Box::new(left.get_variables().chain(right.get_variables())),
+            Expression::Variable { name } => {
+                return Box::new(std::iter::once::<String>(name.to_string()))
+            }
+            _ => return Box::new(std::iter::empty::<String>()),
+        };
+    }
+
     pub fn fold(self) -> Self {
         match self {
             Expression::Number { val } => self,
@@ -233,17 +190,25 @@ impl Expression {
         &self,
         grammar: &Grammar,
         context: &NodeProperties,
-    ) -> Result<f32, String> {
+        rng: &mut StdRng,
+    ) -> Result<ValueOrRange, String> {
         match self {
-            Expression::Number { val } => Ok(*val),
+            Expression::Number { val } => Ok(ValueOrRange::Value(*val)),
             Expression::Variable { name } => grammar
                 .defs
                 .get(&name.to_ascii_lowercase())
                 .ok_or(format!("Varaible '{}' not defined", name))
-                .map(|&x| x),
+                .map(|&x| ValueOrRange::Value(x)),
             Expression::Unary { operator, operand } => {
-                let v = operand.try_get_value(grammar, context)?;
-                Ok(operator.apply(v))
+                let val_or_range = operand.try_get_value(grammar, context, rng)?;
+
+                match val_or_range {
+                    ValueOrRange::Value(v) => Ok(ValueOrRange::Value(operator.apply(v))),
+                    ValueOrRange::Range { start, end } => Ok(ValueOrRange::Range {
+                        start: operator.apply(start),
+                        end: operator.apply(end),
+                    }),
+                }
             }
 
             Expression::PropertyAccess { property } => Ok(property.get(context)),
@@ -252,9 +217,10 @@ impl Expression {
                 operator,
                 right,
             } => {
-                let l = left.try_get_value(grammar, context)?;
-                let r = right.try_get_value(grammar, context)?;
-                Ok(operator.apply(l, r))
+                let l = left.try_get_value(grammar, context, rng)?;
+                let r = right.try_get_value(grammar, context, rng)?;
+
+                Ok(operator.apply_range(l, r))
             }
         }
     }

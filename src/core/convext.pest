@@ -18,9 +18,12 @@ unary = {unary_op ~ expression}
 binary = {simple_expression ~ binary_op ~ expression}
 simple_expression = {number | variable | property_access  | unary}
 expression = { binary | simple_expression }
+range = {expression ~ ".." ~ expression } //TODO allow compound range
+range_random = {range ~ "?"}
+expression_or_range = {range_random | range | expression}
 
 assignment = {keyword_let ~ name ~ number }
-property = {propname ~ expression}
+property = {propname ~ expression_or_range}
 invocation = {name ~ (property)* }
 
 rule = {keyword_rule ~ name ~ expression? ~ invocation* ~ keyword_end?}

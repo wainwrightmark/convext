@@ -6,6 +6,7 @@ use num::traits::ops::inv;
 use pest::iterators::Pairs;
 use pest::Parser;
 use pest_derive::Parser;
+use rand::prelude::StdRng;
 use serde::{Deserialize, Serialize, __private::de};
 
 #[derive(PartialEq, PartialOrd, Copy, Clone, Serialize, Deserialize)]
@@ -34,32 +35,34 @@ impl Primitive {
     pub fn to_svg(
         &self,
         relative_properties: &NodeProperties,
-        absolute_properties: &NodeProperties,
+        absolute_properties: &NodeProperties, 
+        rng: &mut StdRng,
+        
     ) -> String {
-        let rotate_transform = if relative_properties.r == 0.0 {
+        let rotate_transform = if relative_properties.r == 0.0.into() {
             "".to_string()
         } else {
             format!(
                 "style=\"transform: rotate({r}deg);\"",
-                r = relative_properties.r
+                r = relative_properties.r.random_value(rng)
             )
         };
         let color = format!(
             "fill=\"hsl({h}, {s}%, {l}%, {a}%)\" stroke=\"none\"",
-            h = absolute_properties.h,
-            s = absolute_properties.s * 100.0,
-            l = absolute_properties.v * 100.0,
-            a = absolute_properties.a * 100.0,
+            h = absolute_properties.h.random_value(rng),
+            s = absolute_properties.s.random_value(rng) * 100.0,
+            l = absolute_properties.v.random_value(rng) * 100.0,
+            a = absolute_properties.a.random_value(rng) * 100.0,
         );
 
         match self {
             Primitive::Circle => format!(
                 "<ellipse cx={x} cy={y} rx={rx} ry={ry} {color} {rotate_transform} />",
-                x = relative_properties.x,
-                y = relative_properties.y,
+                x = relative_properties.x.random_value(rng),
+                y = relative_properties.y.random_value(rng),
                 //ignore rotation
-                rx = relative_properties.p * absolute_properties.w,
-                ry = relative_properties.p * absolute_properties.l,
+                rx = relative_properties.p.random_value(rng) * absolute_properties.w.random_value(rng),
+                ry = relative_properties.p.random_value(rng) * absolute_properties.l.random_value(rng),
                 color = color,
                 rotate_transform = rotate_transform
             ),
@@ -67,19 +70,19 @@ impl Primitive {
                 let x = relative_properties.x - (relative_properties.p * absolute_properties.w);
                 let y = relative_properties.y - (relative_properties.p * absolute_properties.l);
 
-                let width = relative_properties.p * absolute_properties.w * 2.0;
-                let height = relative_properties.p * absolute_properties.l * 2.0;
+                let width = relative_properties.p * absolute_properties.w * 2.0.into();
+                let height = relative_properties.p * absolute_properties.l * 2.0.into();
 
                 let rx = relative_properties.p * absolute_properties.c;
                 let ry = relative_properties.p * absolute_properties.c;
 
                 format!("<rect x={x} y={y} width={width} height={height} rx={rx} ry={ry} {color}  {rotate_transform} />", 
-                x=x,
-                y=y,
-                rx = rx,
-                ry=ry,
-                width=width,
-                height=height,
+                x=x.random_value(rng),
+                y=y.random_value(rng),
+                rx = rx.random_value(rng),
+                ry=ry.random_value(rng),
+                width=width.random_value(rng),
+                height=height.random_value(rng),
                 color= color,
                 rotate_transform = rotate_transform
             )
@@ -89,10 +92,10 @@ impl Primitive {
                     .into_iter()
                     .flat_map(|(x, y)| {
                         [
-                            (x * relative_properties.p * absolute_properties.w)
-                                + relative_properties.x,
-                            (y * relative_properties.p * absolute_properties.l)
-                                + relative_properties.y,
+                            (x * relative_properties.p.random_value(rng) * absolute_properties.w.random_value(rng))
+                                + relative_properties.x.random_value(rng),
+                            (y * relative_properties.p.random_value(rng) * absolute_properties.l.random_value(rng))
+                                + relative_properties.y.random_value(rng),
                         ]
                     })
                     .join(" ");
@@ -107,10 +110,10 @@ impl Primitive {
                 let points = Self::get_polygon_points(*sides)
                     .flat_map(|(x, y)| {
                         [
-                            (x * relative_properties.p * absolute_properties.w)
-                                + relative_properties.x,
-                            (y * relative_properties.p * absolute_properties.l)
-                                + relative_properties.y,
+                            (x * relative_properties.p.random_value(rng) * absolute_properties.w.random_value(rng))
+                                + relative_properties.x.random_value(rng),
+                            (y * relative_properties.p.random_value(rng) * absolute_properties.l.random_value(rng))
+                                + relative_properties.y.random_value(rng),
                         ]
                     })
                     .join(" ");

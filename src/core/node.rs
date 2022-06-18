@@ -18,8 +18,8 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn to_svg(&self, grammar: &Grammar) -> String {
-        let elements = self.to_svg_element(grammar);
+    pub fn to_svg(&self, grammar: &Grammar, rng: &mut StdRng,) -> String {
+        let elements = self.to_svg_element(grammar, rng);
 
         format!(
             "<svg viewbox=\"-1 -1 2 2\" width=\"100%\" height=\"100%\" > {} </svg>",
@@ -27,16 +27,16 @@ impl Node {
         )
     }
 
-    fn get_style(rp: &NodeProperties) -> String {
+    fn get_style(rp: &NodeProperties, rng: &mut StdRng) -> String {
         let mut transform = "".to_string();
-        if rp.x != 0.0 || rp.y != 0.0 {
-            transform = format!("{} translate({x}px, {y}px) ", transform, x = rp.x, y = rp.y);
+        if rp.x != 0.0.into() || rp.y != 0.0.into() {
+            transform = format!("{} translate({x}px, {y}px) ", transform, x = rp.x.random_value(rng), y = rp.y.random_value(rng));
         }
-        if rp.p != 1.0 {
-            transform = format!("{} scale({p}%) ", transform, p = rp.p * 100.0);
+        if rp.p != 1.0.into() {
+            transform = format!("{} scale({p}%) ", transform, p = rp.p.random_value(rng) * 100.0);
         }
-        if (rp.r != 0.0) {
-            transform = format!("{} rotate({r}deg)", transform, r = rp.r);
+        if (rp.r != 0.0.into()) {
+            transform = format!("{} rotate({r}deg)", transform, r = rp.r.random_value(rng));
         }
         if !transform.is_empty() {
             format!("style=\"transform: {};\"", transform)
@@ -45,11 +45,12 @@ impl Node {
         }
     }
 
-    pub fn to_svg_element(&self, grammar: &Grammar) -> String {
+    pub fn to_svg_element(&self, grammar: &Grammar, rng: &mut StdRng,) -> String {
         let relative_properties = NodeProperties::from_temp(
             &self.invocation.properties,
             grammar,
             &self.absolute_properties,
+            rng
         );
 
         if self.children.is_some() && !self.children.as_ref().unwrap().is_empty() {
@@ -58,10 +59,10 @@ impl Node {
                 .as_ref()
                 .unwrap()
                 .iter()
-                .map(|c| c.to_svg_element(grammar))
+                .map(|c| c.to_svg_element(grammar, rng))
                 .join("\r\n");
 
-            let style = Self::get_style(&relative_properties);
+            let style = Self::get_style(&relative_properties, rng);
 
             format!(
                 "<g {style}>\r\n {child_text}\r\n </g>",
@@ -72,7 +73,7 @@ impl Node {
         } else {
             match self.invocation.method {
                 Method::Root => "".to_string(),
-                Method::Primitive(p) => p.to_svg(&relative_properties, &self.absolute_properties),
+                Method::Primitive(p) => p.to_svg(&relative_properties, &self.absolute_properties, rng),
                 Method::Rule(_) => "".to_string(),
             }
         }

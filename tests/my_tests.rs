@@ -4,9 +4,10 @@ use ntest::test_case;
 use rand::SeedableRng;
 // use rand::{prelude::StdRng, Rng};
 
-pub const EXAMPLES: [&str; 7] = [
+pub const EXAMPLES: [&str; 8] = [
     "Circle",
     "Circle p0.5",
+    "Circle p0.5..0.8",
     "let myvar 100
 square h ?myvar",
     "circle circle p 0.5 h 120",
@@ -42,6 +43,8 @@ end",
 #[test_case(3)]
 #[test_case(4)]
 #[test_case(5)]
+#[test_case(6)]
+#[test_case(7)]
 fn test_svg(index: usize) {
     let input = EXAMPLES[index];
     let grammar = parse(input).unwrap();
@@ -50,7 +53,7 @@ fn test_svg(index: usize) {
 
     let node = grammar.expand(&ExpandSettings::default(), &mut rng);
 
-    let svg = node.to_svg(&grammar);
+    let svg = node.to_svg(&grammar, &mut rng);
 
     assert!(!svg.is_empty());
     //print!("\r\n{svg}\r\n");

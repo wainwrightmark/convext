@@ -7,6 +7,11 @@ mod parser;
 mod primitive;
 mod properties;
 mod user_rules;
+mod binary_operator;
+mod unary_operator;
+mod node_properties;
+mod value_or_range;
+mod expand_settings;
 
 pub mod prelude {
     pub use crate::core::examples::*;
@@ -17,5 +22,10 @@ pub mod prelude {
     pub use crate::core::parser::*;
     pub use crate::core::primitive::*;
     pub use crate::core::properties::*;
+    pub use crate::core::binary_operator::*;
+    pub use crate::core::unary_operator::*;
     pub use crate::core::user_rules::*;
+    pub use crate::core::node_properties::*;
+    pub use crate::core::value_or_range::*;
+    pub use crate::core::expand_settings::*;
 }

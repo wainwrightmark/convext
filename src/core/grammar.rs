@@ -36,13 +36,9 @@ impl Grammar {
             })
         });
 
-        all_properties
+        all_properties        
             .flat_map(|p| {
-                if let Expression::Variable { name } = p.value.clone() {
-                    Some((name, p.key.get_type()))
-                } else {
-                    None
-                }
+                p.value.get_variables().map(|name| (name, p.key.get_type()) )
             })
             .chain(prob_properties)
             .sorted_by_key(|p| p.0.clone())
@@ -70,7 +66,7 @@ impl Grammar {
         let nodes = self
             .top_level
             .iter()
-            .map(|i| i.to_node(&NodeProperties::default_initial(), self))
+            .map(|i| i.to_node(&NodeProperties::default_initial(), self, rng))
             .collect_vec();
 
         let mut root = Node {
@@ -114,29 +110,7 @@ impl std::ops::Add<&ExpandStatistics> for ExpandStatistics {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct ExpandSettings {
-    pub max_nodes: usize,
-    pub max_depth: usize,
-    pub min_a: f32,
-    pub min_p: f32,
-}
 
-impl ExpandSettings {
-    ///Should this node be culled, according to the settings
-    pub fn should_cull(&self, node: &Node) -> bool {
-        if node.absolute_properties.a < self.min_a
-            || node.absolute_properties.d > self.max_depth
-            || node.absolute_properties.p * node.absolute_properties.w < self.min_p
-            || node.absolute_properties.p * node.absolute_properties.l < self.min_p
-            || node.absolute_properties.x.abs() - node.absolute_properties.p > 1.5
-        {
-            true
-        } else {
-            node.absolute_properties.y.abs() - node.absolute_properties.p > 1.5
-        }
-    }
-}
 
 impl Default for ExpandSettings {
     fn default() -> Self {

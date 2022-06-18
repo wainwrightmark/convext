@@ -30,13 +30,13 @@ impl RuleCase {
         rng: &mut StdRng,
     ) -> bool {
         if let Some(value) = &self.probability {
-            let prob = value.try_get_value(grammar, context).unwrap();
-            if prob >= 1.0 {
+            let prob = value.try_get_value(grammar, context, rng).unwrap();
+            if prob.min_value() >= 1.0 {
                 true
-            } else if prob <= 0.0 {
+            } else if prob.max_value() <= 0.0 {
                 false
             } else {
-                rng.gen_bool(prob.into())
+                rng.gen_bool(prob.max_value().into())//todo look at this
             }
         } else {
             true

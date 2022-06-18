@@ -6,7 +6,7 @@ use num::traits::ops::inv;
 use pest::iterators::Pairs;
 use pest::Parser;
 use pest_derive::Parser;
-use rand::prelude::StdRng;
+use rand::{prelude::StdRng, SeedableRng, Rng};
 use serde::{Deserialize, Serialize};
 use yew::Properties;
 
@@ -33,27 +33,35 @@ impl Invocation {
         match self.method.clone() {
             Method::Primitive(_) => Default::default(),
             Method::Root => unreachable!(),
-            Method::Rule(r) => grammar
+            Method::Rule(r) =>{
+                let mut rng1 = StdRng::from_seed(rng.gen());
+                let mut rng2 = StdRng::from_seed(rng.gen());
+
+                grammar
                 .rules
                 .get(&r)
                 .unwrap()
                 .cases
                 .iter()
-                .filter(|&c| c.should_enter(grammar, absolute_properties, rng))
+                .filter(|&c| c.should_enter(grammar, absolute_properties, &mut rng1))
                 .take(1) //only take the first condition which matches
                 .flat_map(|c| c.invocations.iter())
-                .map(|c| c.to_node(absolute_properties, grammar))
-                .collect_vec(),
+                .map(|c| c.to_node(absolute_properties, grammar, &mut rng2))
+                .collect_vec()
+
+
+            }
         }
     }
 
-    pub fn to_node(&self, parent_properties: &NodeProperties, grammar: &Grammar) -> Node {
+    pub fn to_node(&self, parent_properties: &NodeProperties, grammar: &Grammar, rng: &mut StdRng,) -> Node {
         Node {
             invocation: self.clone(),
             absolute_properties: parent_properties.make_absolute(&NodeProperties::from_temp(
                 &self.properties,
                 grammar,
                 parent_properties,
+                rng
             )),
             children: None,
         }

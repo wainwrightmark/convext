@@ -34,7 +34,7 @@ impl ImageState {
         let mut override_grammar = input.grammar.clone();
         override_grammar.override_defs(&input.overrides);
         let node = override_grammar.expand(&input.settings, &mut rng);
-        let svg = node.to_svg(&override_grammar);
+        let svg = node.to_svg(&override_grammar,&mut rng);
         self.svg = svg;
     }
 }
