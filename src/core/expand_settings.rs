@@ -24,11 +24,11 @@ impl ExpandSettings {
             || node.absolute_properties.d > self.max_depth
             || node.absolute_properties.p.max_value() * node.absolute_properties.w.max_value() < self.min_p
             || node.absolute_properties.p.max_value() * node.absolute_properties.l.max_value() < self.min_p
-            || node.absolute_properties.x.max_abs() - node.absolute_properties.p.min_value() > 1.5
+            || node.absolute_properties.x.max_abs() - node.absolute_properties.p.min_value() > 3.0
         {
             true
         } else {
-            node.absolute_properties.y.max_abs() - node.absolute_properties.p.min_value() > 1.5
+            node.absolute_properties.y.max_abs() - node.absolute_properties.p.min_value() > 3.0
         }
     }
 }
